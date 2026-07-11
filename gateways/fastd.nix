@@ -73,7 +73,7 @@ in
     systemd.services = lib.listToAttrs (map mkFastdService meshCfg.domains);
     networking.firewall.interfaces.frontend.allowedUDPPorts = map (dom: dom.fastdPort) meshCfg.domains;
 
-    services.meshGateway.allowedUDPPorts = [ 42453 ]; # fastd-server-side-ratelimit
+    networking.firewall.interfaces."fastd-*".allowedUDPPorts = [ 42453 ];
     services.fastd-server-side-ratelimit = {
       enable = true;
       interfacePrefix = "fastd-dom";
