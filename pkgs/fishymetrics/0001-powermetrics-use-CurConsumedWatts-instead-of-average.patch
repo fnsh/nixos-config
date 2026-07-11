@@ -1,0 +1,46 @@
+From cab54a00eece90db625ca9174ce0aeac4f4698b0 Mon Sep 17 00:00:00 2001
+From: liv <liv+git@spacegli.de>
+Date: Tue, 23 Jun 2026 22:43:41 +0200
+Subject: [PATCH] powermetrics: use CurConsumedWatts instead of average
+
+---
+ exporter/handlers.go | 8 ++++----
+ oem/power.go         | 1 +
+ 2 files changed, 5 insertions(+), 4 deletions(-)
+
+diff --git a/exporter/handlers.go b/exporter/handlers.go
+index 4932b84..e55d9ec 100644
+--- a/exporter/handlers.go
++++ b/exporter/handlers.go
+@@ -102,12 +102,12 @@ func (e *Exporter) exportPowerMetrics(body []byte) error {
+ 			}
+ 		default:
+ 			for _, pm := range pc.PowerMetrics.PowerMetric {
+-				// use the AverageConsumedWatts if PowerConsumedWatts is not present
+-				switch pm.AverageConsumedWatts.(type) {
++				// use the CurConsumedWatts if PowerConsumedWatts is not present
++				switch pm.CurConsumedWatts.(type) {
+ 				case float64:
+-					watts = pm.AverageConsumedWatts.(float64)
++					watts = pm.CurConsumedWatts.(float64)
+ 				case string:
+-					watts, _ = strconv.ParseFloat(pm.AverageConsumedWatts.(string), 32)
++					watts, _ = strconv.ParseFloat(pm.CurConsumedWatts.(string), 32)
+ 				}
+ 			}
+ 		}
+diff --git a/oem/power.go b/oem/power.go
+index 8027100..ede3177 100644
+--- a/oem/power.go
++++ b/oem/power.go
+@@ -94,6 +94,7 @@ type PowerMetric struct {
+ 	IntervalInMin        interface{} `json:"IntervalInMin,omitempty"`
+ 	MaxConsumedWatts     interface{} `json:"MaxConsumedWatts"`
+ 	MinConsumedWatts     interface{} `json:"MinConsumedWatts"`
++	CurConsumedWatts     interface{} `json:"CurConsumedWatts"`
+ }
+ 
+ // PowerSupply is the top level json object for metadata on power supply product info
+-- 
+2.54.0
+

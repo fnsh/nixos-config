@@ -1,0 +1,110 @@
+#!/bin/sh
+
+# Usage:
+#   ipxlat-ctl-ynl <ifname> <param> <value>
+# Examples:
+#   ipxlat-ctl-ynl siit0 xlat-prefix6 2001:db8:100::/40
+#   ipxlat-ctl-ynl siit0 lowest-ipv6-mtu 1280
+
+# IPXLAT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+KERNEL_DIR=${KERNEL_DIR:-$IPXLAT_DIR/../ipxlat-net-next}
+
+YNL_SPEC=${YNL_SPEC:-$KERNEL_DIR/Documentation/netlink/specs/ipxlat.yaml}
+YNL_CLI=${YNL_CLI:-$KERNEL_DIR/tools/net/ynl/pyynl/cli.py}
+
+ipxl_usage()
+{
+	echo "usage: ipxlat-ctl-ynl <ifname> <param> <value>" >&2
+	echo "params: xlat-prefix6 lowest-ipv6-mtu" >&2
+}
+
+ipxl_addr6_to_hex()
+{
+	python3 - "$1" <<'PY'
+import ipaddress, sys
+print(ipaddress.IPv6Address(sys.argv[1]).packed.hex())
+PY
+}
+
+ipxl_ifindex()
+{
+	ip -o link show dev "$1" | awk -F': ' 'NR==1 { print $1 }'
+}
+
+ipxl_ynl_run()
+{
+	if command -v ynl >/dev/null 2>&1; then
+		ynl --spec "$YNL_SPEC" "$@"
+		return
+	fi
+
+	python3 "$YNL_CLI" --spec "$YNL_SPEC" "$@"
+}
+
+ipxlat_ynl_build_cfg_json()
+{
+	param=$1
+	value=$2
+
+	case "$param" in
+	xlat-prefix6|pool6)
+		if [ "$param" = "pool6" ]; then
+			echo>&2 "WARN: Using deprecated 'pool6' parameter name. Use 'xlat-prefix6' instead!"
+		fi
+		prefix=${value%/*}
+		plen=${value#*/}
+		if [ -z "$prefix" ] || [ -z "$plen" ] || [ "$prefix" = "$value" ]; then
+			echo "$param must be in CIDR form: <ipv6>/<prefixlen>" >&2
+			exit
+		fi
+
+		prefix_hex=$(ipxl_addr6_to_hex "$prefix") || return 2
+		cfg_json=$(jq -n \
+			--arg prefix "$prefix_hex" \
+			--argjson plen "$plen" \
+			'{"xlat-prefix6": {"prefix": $prefix, "prefix-len": $plen}}')
+		;;
+	lowest-ipv6-mtu)
+		cfg_json=$(jq -n --argjson v "$value" '{"lowest-ipv6-mtu": $v}')
+		;;
+	pool6791v4|pool6791v6|compute-udp-csum-zero|compute_udp_csum_zero)
+		echo "WARN: Deprecated parameter $1" >&2
+		exit 0
+		;;
+	*)
+		echo "unsupported param: $param" >&2
+		ipxl_usage
+		exit 2
+		;;
+	esac
+}
+
+main()
+{
+	if [ "$#" -ne 3 ]; then
+		ipxl_usage
+		return 2
+	fi
+
+	ifname=$1
+	param=$2
+	value=$3
+
+	ifindex=$(ipxl_ifindex "$ifname")
+	if [ -z "$ifindex" ]; then
+		echo "cannot resolve ifindex for interface '$ifname'" >&2
+		return 1
+	fi
+
+	cfg_json=
+	ipxlat_ynl_build_cfg_json "$param" "$value"
+	dev_set_json=$(jq -n \
+		--argjson ifindex "$ifindex" \
+		--argjson config "$cfg_json" \
+		'{"ifindex": $ifindex, "config": $config}')
+
+	ipxl_ynl_run --do dev-set --json "$dev_set_json"
+}
+
+main "$@"
+

@@ -1,0 +1,136 @@
+From 63afb07ba436677a0fe1708e9c970d0d61ea131c Mon Sep 17 00:00:00 2001
+From: liv <liv+git@spacegli.de>
+Date: Mon, 22 Jun 2026 13:41:50 +0200
+Subject: [PATCH] router: consolidate functions; fix route generation
+
+---
+ lib/gui.ts               |  6 ++----
+ lib/utils/language.ts    |  2 +-
+ lib/utils/router.test.ts |  4 ++--
+ lib/utils/router.ts      | 38 +++++++++++++++++++++-----------------
+ 4 files changed, 26 insertions(+), 24 deletions(-)
+
+diff --git a/lib/gui.ts b/lib/gui.ts
+index 66c6a91..a11a825 100644
+--- a/lib/gui.ts
++++ b/lib/gui.ts
+@@ -103,13 +103,11 @@ export const Gui = function (language: ReturnType<typeof Language>) {
+   buttonToggle.classList.add("ion-eye");
+   buttonToggle.setAttribute("aria-label", _.t("button.switchView"));
+   buttonToggle.onclick = function onclick() {
+-    let data: {};
+     if (router.currentView() === "map") {
+-      data = { view: "graph", lat: undefined, lng: undefined, zoom: undefined };
++      router.fullUrl({ view: "graph" });
+     } else {
+-      data = { view: "map" };
++      router.fullUrl({ view: "map" });
+     }
+-    router.deepUrl(data);
+   };
+ 
+   buttons.appendChild(buttonToggle);
+diff --git a/lib/utils/language.ts b/lib/utils/language.ts
+index acd9ea2..f7700c4 100644
+--- a/lib/utils/language.ts
++++ b/lib/utils/language.ts
+@@ -27,7 +27,7 @@ export const Language = function () {
+   }
+ 
+   function setSelectLocale(event: any) {
+-    router.deepUrl({ lang: event.target.value });
++    router.fullUrl({ lang: event.target.value });
+   }
+ 
+   function getLocale(input?: LanguageCode): LanguageCode {
+diff --git a/lib/utils/router.test.ts b/lib/utils/router.test.ts
+index 7fe3849..1029639 100644
+--- a/lib/utils/router.test.ts
++++ b/lib/utils/router.test.ts
+@@ -1,7 +1,7 @@
+ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+ import { Router } from "./router.js";
+ 
+-describe("Router.deepUrl", () => {
++describe("Router.fullUrl", () => {
+   it("navigates without adding an extra hash prefix", () => {
+     const navigate = vi.fn();
+     const fakeRouter = {
+@@ -22,7 +22,7 @@ describe("Router.deepUrl", () => {
+       generateLink: Router.prototype.generateLink,
+     };
+ 
+-    Router.prototype.deepUrl.call(fakeRouter, { view: "graph" });
++    Router.prototype.fullUrl.call(fakeRouter, { view: "graph" });
+ 
+     expect(navigate).toHaveBeenCalledWith("/de/graph");
+   });
+diff --git a/lib/utils/router.ts b/lib/utils/router.ts
+index 154525c..9a3c2bb 100644
+--- a/lib/utils/router.ts
++++ b/lib/utils/router.ts
+@@ -23,6 +23,8 @@ interface Views {
+ 
+ type RouteData = Record<string, string> | string[] | null;
+ 
++type NavigationProps = { link?: string, node?: string, view?: "map" | "graph", lang?: "string" };
++
+ function routeGroup(data: RouteData, index: number): string | undefined {
+   if (data == null) {
+     return undefined;
+@@ -194,17 +196,10 @@ export class Router extends Navigo {
+     return "?" + qs.toString();
+   }
+ 
+-  generateLink(data?: Record<string, unknown>, full?: boolean) {
+-    let result = "";
+-
+-    let merged: Record<string, unknown>;
+-    if (full) {
+-      merged = Object.assign({}, this.state, data);
+-    } else {
+-      result = "#";
+-      merged = Object.assign({}, this.currentState, data);
+-    }
++  generateLink(data?: NavigationProps) {
++    let merged: Record<string, unknown> = Object.assign({}, this.state, data);
+ 
++    let result = "#";
+     for (const key in merged) {
+       if (!Object.prototype.hasOwnProperty.call(merged, key)) {
+         continue;
+@@ -226,15 +221,24 @@ export class Router extends Navigo {
+     if (e) {
+       e.preventDefault();
+     }
+-    this.navigate(this.generateLink(data, true));
+-  }
++    let result = "";
++    let merged = Object.assign({}, this.state, data);
+ 
+-  deepUrl(data?: Record<string, unknown>, e?: Event | false) {
+-    if (e) {
+-      e.preventDefault();
++    for (const key in merged) {
++      if (!Object.prototype.hasOwnProperty.call(merged, key)) {
++        continue;
++      }
++      const v = merged[key];
++      if (v === undefined || v === "") {
++        continue;
++      }
++      result += "/" + String(v);
+     }
+-    const target = this.generateLink(data);
+-    this.navigate(target.startsWith("#") ? target.slice(1) : target);
++
++    const params = this.getParams();
++    result += this.paramsToUrl(params);
++
++    this.navigate(result);
+   }
+ 
+   getLang() {
+-- 
+2.54.0
+

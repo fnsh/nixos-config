@@ -1,0 +1,66 @@
+From 253ecaf95d32a9b0fefea103f7384174da86aa76 Mon Sep 17 00:00:00 2001
+From: liv <liv+git@spacegli.de>
+Date: Thu, 18 Jun 2026 22:31:06 +0200
+Subject: [PATCH] chore: remove pwa
+
+---
+ vite.config.js | 36 ------------------------------------
+ 1 file changed, 36 deletions(-)
+
+diff --git a/vite.config.js b/vite.config.js
+index 03fa09a..d20e152 100644
+--- a/vite.config.js
++++ b/vite.config.js
+@@ -2,7 +2,6 @@ import { readFileSync } from "fs";
+ import { resolve } from "path";
+ import { defineConfig } from "vite";
+ import { checker } from "vite-plugin-checker";
+-import { VitePWA } from "vite-plugin-pwa";
+ import pkg from "./package.json";
+ import { resolveRelativeFixtureTimes } from "./scripts/fixture-times.mjs";
+ 
+@@ -86,41 +85,6 @@ export default defineConfig(({ command, mode }) => ({
+   },
+   plugins: [
+     command === "serve" && mode === "fixtures" ? devFixturesPlugin() : null,
+-    process.env.VITE_PREVIEW === "1"
+-      ? null
+-      : new VitePWA({
+-          workbox: {
+-            globPatterns: ["**/*.{js,css,html,ico,png,svg,ttf,woff,woff2}"],
+-            navigateFallbackDenylist: [new RegExp(".*\.json")],
+-          },
+-          manifest: {
+-            name: "Meshviewer",
+-            short_name: "Meshviewer",
+-            description:
+-              "Meshviewer is an online visualization app to represent nodes and links on a map for Freifunk open mesh network.",
+-            theme_color: "#ffffff",
+-            icons: [
+-              {
+-                src: "pwa-64x64.png",
+-                sizes: "64x64",
+-                type: "image/png",
+-              },
+-              {
+-                src: "pwa-192x192.png",
+-                sizes: "192x192",
+-                type: "image/png",
+-              },
+-              {
+-                src: "pwa-512x512.png",
+-                sizes: "512x512",
+-                type: "image/png",
+-              },
+-            ],
+-          },
+-          devOptions: {
+-            enabled: true,
+-          },
+-        }),
+     checker({
+       // Run TypeScript checks
+       typescript: true,
+-- 
+2.54.0
+

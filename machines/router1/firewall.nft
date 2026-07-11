@@ -1,0 +1,50 @@
+table inet filter {
+  chain input {
+    type filter hook input priority 0; policy drop;
+
+    iif "lo" accept
+    ct state established,related accept
+
+    tcp dport 22 accept
+
+    # Allow ICMP on all interfaces
+    ip protocol icmp accept
+    ip6 nexthdr icmpv6 accept
+
+    # Allow BGP on VLAN interfaces (ARP is L2 and not filtered in inet/input)
+    iifname { "configo-peer", "interlink-peer" } ip protocol icmp accept
+    iifname { "configo-peer", "interlink-peer" } tcp dport 179 accept
+  }
+
+  chain forward {
+    type filter hook forward priority 0; policy drop;
+
+    # Block TCP source and destination 25 everywhere
+    meta l4proto tcp tcp dport 25 drop
+    meta l4proto tcp tcp sport 25 drop
+
+    # Drop incoming traffic from our nets on peer ifaces
+    iifname { "configo-peer", "interlink-peer" } ip saddr 194.180.249.0/24 drop
+    iifname { "configo-peer", "interlink-peer" } ip6 saddr 2a13:fcc0::/29 drop
+
+    # Allow Forward from Frontend to Peers and vice versa
+    iifname { "frontend", "neanderfunk" } oifname { "configo-peer", "interlink-peer" } accept
+    iifname { "configo-peer", "interlink-peer" } oifname { "frontend", "neanderfunk" } accept
+    iifname { "neanderfunk", "frontend" } oifname { "neanderfunk", "frontend" } accept
+
+    iifname { "vrf-as62028" } oifname { "configo-peer", "interlink-peer" } accept
+    iifname { "vrf-as62028" } oifname { "neanderfunk", "frontend" } accept
+    iifname { "configo-peer", "interlink-peer" } oifname { "vrf-as62028" } accept
+    iifname { "neanderfunk", "frontend" } oifname { "vrf-as62028" } accept
+  }
+
+  chain output {
+    type filter hook output priority 0; policy accept;
+
+    # Allow only BGP on VLAN interfaces (ARP is L2 and not filtered in inet/output)
+    oifname { "configo-peer", "interlink-peer" } ip protocol icmp accept
+    oifname { "configo-peer", "interlink-peer" } ip6 nexthdr icmpv6 accept
+    oifname { "configo-peer", "interlink-peer" } tcp dport 179 accept
+    oifname { "configo-peer", "interlink-peer" } drop
+  }
+}
