@@ -34,8 +34,12 @@ let
       after = [
         "network.target"
         "network-online.target"
+        "fastd-key-update.service"
       ];
-      wants = [ "network-online.target" ];
+      wants = [
+        "network-online.target"
+        "fastd-key-update.service"
+      ];
       wantedBy = [ "multi-user.target" ];
 
       serviceConfig = {
@@ -58,8 +62,6 @@ let
         BindPaths = "/etc/fastd";
       };
     };
-
-  fastdServices = map (domain: "fastd-dom${toString domain.id}.service") meshCfg.domains;
 in
 {
   config = {
@@ -112,13 +114,6 @@ in
           initialUpstreamRate = 30000;
         }
       ];
-    };
-
-    # Fastd key repo
-    services.gitMirror.instances.fastd-keys = {
-      url = "https://git.darmstadt.ccc.de/ffda/fastd-keys.git";
-      directory = "/var/lib/git-mirrors/fastd-keys";
-      reloadUnits = fastdServices;
     };
   };
 }
