@@ -74,7 +74,7 @@
             imports = [
               disko.nixosModules.disko
               agenix.nixosModules.default
-              ./machines/common.nix
+              ./modules/common
               ./modules/collector.nix
             ];
           };
