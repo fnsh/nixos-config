@@ -1,7 +1,7 @@
 { config, lib, ... }:
 let
   cfg = config.services.meshGateway;
-  numDomains = 19;
+  numDomains = 20;
 
   hexOctet = id: if id > 15 then lib.toHexString id else "0${lib.toHexString id}";
   mkSubnet6 = net: {

@@ -361,6 +361,14 @@
             domain = "ffda_64756";
             name = "Mossautal";
           }
+          {
+            domain = "fnsh_dom20";
+            name = "Domain 20";
+          }
+          {
+            domain = "fnsh_yolo";
+            name = "Test-Domain";
+          }
         ];
         fixedCenter = [
           [
