@@ -11,7 +11,7 @@
     ./meshviewer.nix
   ];
 
-  networking.hostName = "htz-monitoring";
+  networking.hostName = "monitoring";
   system.stateVersion = "25.11";
 
   boot.initrd.availableKernelModules = [

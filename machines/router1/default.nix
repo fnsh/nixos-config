@@ -21,21 +21,9 @@ let
         TCPSegmentationOffload = false;
       };
     };
-
-  public_ip_nets = [
-    # Own
-    "2a13:fcc0::/29"
-    "194.180.249.0/24"
-    # Configo
-    "217.71.220.139/32"
-    "2a00:1fe8:1::39/128"
-    # Inter.Link
-    "81.27.69.85/32"
-    "2a11:4140:9002::31/128"
-  ];
 in
 {
-  networking.hostName = "router01";
+  networking.hostName = "router1";
 
   environment.systemPackages = with pkgs; [
     wireguard-tools

@@ -6,7 +6,7 @@
     ./1nce.nix
   ];
 
-  networking.hostName = "monitoring-proxy";
+  networking.hostName = "collector";
 
   system.stateVersion = "25.11";
   boot.initrd.availableKernelModules = [
