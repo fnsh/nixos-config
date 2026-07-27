@@ -7,6 +7,7 @@
   imports = [
     ./ssh.nix
     ./shell.nix
+    ./nginx.nix
   ];
 
   # "Hardware" options
