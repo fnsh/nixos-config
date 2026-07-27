@@ -121,6 +121,17 @@ in
         };
       };
 
+      "51-vrf-as62028" = {
+        matchConfig.Name = "vrf-as62028";
+
+        networkConfig = {
+          Address = [
+            "194.180.249.36/32"
+            "2a13:fcc0:1007::36/128"
+          ];
+        };
+      };
+
       "300-neanderfunk" = {
         matchConfig.MACAddress = mkMac 300;
 
