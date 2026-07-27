@@ -7,6 +7,8 @@
     ./grafana.nix
     ./collector.nix
     ./ping.nix
+    ./yanic.nix
+    ./meshviewer.nix
   ];
 
   networking.hostName = "htz-monitoring";

@@ -16,15 +16,24 @@ in
         delete_interval = "3650d";
       };
 
-      database.connection.influxdb = [
-        {
-          enable = true;
-          address = "https://vm.monitoring.htz.nbg.infra.as62028.de/";
-          database = "victoria";
-          username = "ffda-metrics";
-          password = "@MONITORING_PASSWORD@";
-        }
-      ];
+      database.connection = {
+        influxdb = [
+          {
+            enable = true;
+            address = "https://vm.monitoring.htz.nbg.infra.as62028.de/";
+            database = "victoria";
+            username = "ffda-metrics";
+            password = "@MONITORING_PASSWORD@";
+          }
+        ];
+        respondd = [
+          {
+            enable = true;
+            type = "udp6";
+            address = "monitoring.htz.nbg.infra.as62028.de:10001";
+          }
+        ];
+      };
 
       nodes.save_interval = "5y"; # Save cannot be disabled, set the time very high
 
