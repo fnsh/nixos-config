@@ -519,7 +519,7 @@
             };
 
             locations."= /data/meshviewer.json" = {
-              alias = "/var/lib/yanic/meshviewer.json";
+              alias = "/srv/yanic/meshviewer.json";
             };
             locations."= /config.json" = {
               alias = pkgs.writeText "config.json" (builtins.toJSON meshviewerConfig);
