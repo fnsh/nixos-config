@@ -2,6 +2,9 @@
 {
   networking.firewall.interfaces."mgmt".allowedTCPPorts = [ 22 ];
 
+  # No logging to disk
+  services.journald.storage = "volatile";
+
   disko.devices = {
     disk = {
       main = {
