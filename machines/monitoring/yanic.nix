@@ -1,10 +1,19 @@
-{ ... }:
+{ lib, ... }:
 {
   imports = [
     ../../modules/yanic.nix
   ];
 
-  networking.firewall.interfaces."enp1s0".allowedUDPPorts = [ 10001 ];
+  networking.firewall.extraInputRules =
+    let
+      poolOffset = gwId: 1 + (gwId * 2);
+      mkGwAddr = gwId: "2a13:fcc0:ebbe:1:401:1000:110:${toString (poolOffset gwId)}";
+
+      gwAddrs = lib.concatMapStringsSep "," mkGwAddr (lib.range 1 8);
+    in
+    ''
+      iifname "enp1s0" ip6 saddr { ${gwAddrs} } tcp dport 11001 accept
+    '';
 
   systemd.mounts = [
     {
@@ -45,18 +54,8 @@
       respondd = {
         enable = true;
         collect_interval = "1m"; # Doesn't do anything, but is required for yanic to start
+        tcp_listen = [ "[::]:11001" ];
       };
-
-      # "respondd.sites.default".domains = map (domain: "dom${toString domain.id}") meshCfg.domains;
-      respondd.interfaces = [
-        {
-          ifname = "enp1s0";
-          port = 10001;
-          send_no_request = true;
-          ip_address = "::";
-        }
-      ];
-
       nodes = {
         offline_after = "10m";
         prune_after = "7d";

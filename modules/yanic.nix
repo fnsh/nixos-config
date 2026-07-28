@@ -6,6 +6,7 @@
 }:
 let
   cfg = config.services.yanic;
+  yanicPkg = pkgs.callPackage ../pkgs/yanic { };
 
   tomlFormat = pkgs.formats.toml { };
 
@@ -55,7 +56,7 @@ in
         '';
 
         ExecStart = toString [
-          (lib.getExe pkgs.yanic)
+          (lib.getExe yanicPkg)
           "serve"
           "--config"
           "/run/yanic/yanic.toml"

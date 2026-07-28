@@ -1,0 +1,663 @@
+From c4b871019fffcd442bca4a240400283b749b00a6 Mon Sep 17 00:00:00 2001
+From: Aron Eiermann <mail@aroneiermann.de>
+Date: Mon, 27 Jul 2026 17:29:37 +0200
+Subject: [PATCH] feat(respondd): add tcp support for yanic-to-yanic
+ communication
+
+Allow forwarding collected respondd packages to another yanic instance
+over tcp. Since tcp is a stream without message boundaries, every
+package is sent as a length-prefixed frame (4-byte big-endian size +
+deflate-compressed JSON, same payload as over udp).
+
+- new "tcp_listen" option in [respondd] to receive framed packages
+- database respondd sender frames packages on stream networks
+  (tcp, tcp4, tcp6, unix) and redials broken connections
+- shared WriteFrame/ReadFrame protocol helpers in the respond package
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+---
+ config_example.toml            |   6 ++
+ database/respondd/main.go      |  75 ++++++++++++++++++-----
+ database/respondd/main_test.go |  72 ++++++++++++++++++++++
+ docs/docs/configuration.md     |  17 ++++++
+ respond/collector.go           | 107 +++++++++++++++++++++++++++++++--
+ respond/collector_test.go      |  43 +++++++++++++
+ respond/config.go              |   1 +
+ respond/respond.go             |  40 ++++++++++++
+ respond/respond_test.go        |  38 ++++++++++++
+ 9 files changed, 379 insertions(+), 20 deletions(-)
+
+diff --git a/config_example.toml b/config_example.toml
+index 40f0ea2..2d94d76 100644
+--- a/config_example.toml
++++ b/config_example.toml
+@@ -10,6 +10,10 @@ synchronize      = "1m"
+ # how often request per multicast
+ collect_interval = "1m"
+ 
++# listen on tcp addresses to receive respondd packages from other yanic
++# instances (e.g. by the database type "respondd" with a tcp type)
++#tcp_listen = ["[::]:11001"]
++
+ # If you have custom respondd fields, you can ask Yanic to also collect these.
+ # NOTE: This does not automatically include these fields in the output.
+ #       The meshviewer-ffrgb output module will include them under "custom_fields",
+@@ -279,6 +283,8 @@ prefix   = "freifunk"
+ [[database.connection.respondd]]
+ enable   = false
+ # type of network to create a connection
++# stream types like "tcp" send length-prefixed frames, which the "tcp_listen"
++# option of [respondd] on the receiving yanic instance understands
+ type     = "udp6"
+ # destination address to connect/send respondd package
+ address  = "stats.bremen.freifunk.net:11001"
+diff --git a/database/respondd/main.go b/database/respondd/main.go
+index 4b8de4e..85279d8 100644
+--- a/database/respondd/main.go
++++ b/database/respondd/main.go
+@@ -4,23 +4,26 @@ package respondd
+  * This database type is for injecting into another yanic instance.
+  */
+ import (
+-	"bufio"
++	"bytes"
+ 	"compress/flate"
+ 	"encoding/json"
+ 	"net"
++	"sync"
+ 	"time"
+ 
+ 	"github.com/bdlm/log"
+ 
+ 	"github.com/FreifunkBremen/yanic/data"
+ 	"github.com/FreifunkBremen/yanic/database"
++	"github.com/FreifunkBremen/yanic/respond"
+ 	"github.com/FreifunkBremen/yanic/runtime"
+ )
+ 
+ type Connection struct {
+ 	database.Connection
+-	config Config
+-	conn   net.Conn
++	config  Config
++	conn    net.Conn
++	connMux sync.Mutex
+ }
+ 
+ type Config map[string]interface{}
+@@ -33,6 +36,16 @@ func (c Config) Address() string {
+ 	return c["address"].(string)
+ }
+ 
++// Streamed returns true if the network type is stream-oriented and therefore
++// needs framing of the respondd packages (see respond.WriteFrame)
++func (c Config) Streamed() bool {
++	switch c.Type() {
++	case "tcp", "tcp4", "tcp6", "unix":
++		return true
++	}
++	return false
++}
++
+ var logger *log.Entry
+ 
+ func init() {
+@@ -58,18 +71,12 @@ func (conn *Connection) InsertNode(node *runtime.Node) {
+ 		Neighbours: node.Neighbours,
+ 	}
+ 
+-	writer := bufio.NewWriterSize(conn.conn, 8192)
+-
+-	flater, err := flate.NewWriter(writer, flate.BestCompression)
++	buf := new(bytes.Buffer)
++	flater, err := flate.NewWriter(buf, flate.BestCompression)
+ 	if err != nil {
+ 		logger.WithError(err).Error("could not create flater")
+ 		return
+ 	}
+-	defer func() {
+-		if err := flater.Close(); err != nil {
+-			logger.WithError(err).Error("could not close flater")
+-		}
+-	}()
+ 	err = json.NewEncoder(flater).Encode(res)
+ 	if err != nil {
+ 		nodeid := "unknown"
+@@ -79,16 +86,48 @@ func (conn *Connection) InsertNode(node *runtime.Node) {
+ 		logger.WithError(err).WithField("node_id", nodeid).Error("could not encode node")
+ 		return
+ 	}
+-	err = flater.Flush()
+-	if err != nil {
++	if err := flater.Close(); err != nil {
+ 		logger.WithError(err).Error("could not compress")
++		return
+ 	}
+-	err = writer.Flush()
+-	if err != nil {
++
++	if err := conn.send(buf.Bytes()); err != nil {
+ 		logger.WithError(err).Error("could not send")
+ 	}
+ }
+ 
++// send transmits a compressed respondd package. On stream connections (e.g.
++// TCP) the package is framed and a broken connection is dialed again on the
++// next call (e.g. after a restart of the remote yanic instance).
++func (conn *Connection) send(raw []byte) error {
++	conn.connMux.Lock()
++	defer conn.connMux.Unlock()
++
++	if conn.conn == nil {
++		c, err := net.Dial(conn.config.Type(), conn.config.Address())
++		if err != nil {
++			return err
++		}
++		conn.conn = c
++	}
++
++	var err error
++	if conn.config.Streamed() {
++		err = respond.WriteFrame(conn.conn, raw)
++	} else {
++		_, err = conn.conn.Write(raw)
++	}
++
++	if err != nil && conn.config.Streamed() {
++		// drop broken connection, redial on next send
++		if errClose := conn.conn.Close(); errClose != nil {
++			logger.WithError(errClose).Error("could not close broken connection")
++		}
++		conn.conn = nil
++	}
++	return err
++}
++
+ func (conn *Connection) InsertLink(link *runtime.Link, time time.Time) {
+ }
+ 
+@@ -99,7 +138,13 @@ func (conn *Connection) PruneNodes(deleteAfter time.Duration) {
+ }
+ 
+ func (conn *Connection) Close() {
++	conn.connMux.Lock()
++	defer conn.connMux.Unlock()
++	if conn.conn == nil {
++		return
++	}
+ 	if err := conn.conn.Close(); err != nil {
+ 		logger.WithError(err).Error("cound not close socket")
+ 	}
++	conn.conn = nil
+ }
+diff --git a/database/respondd/main_test.go b/database/respondd/main_test.go
+index ecdf05b..224939a 100644
+--- a/database/respondd/main_test.go
++++ b/database/respondd/main_test.go
+@@ -1,9 +1,16 @@
+ package respondd
+ 
+ import (
++	"bytes"
++	"compress/flate"
++	"encoding/json"
++	"io"
++	"net"
+ 	"testing"
++	"time"
+ 
+ 	"github.com/FreifunkBremen/yanic/data"
++	"github.com/FreifunkBremen/yanic/respond"
+ 	"github.com/FreifunkBremen/yanic/runtime"
+ 	"github.com/stretchr/testify/assert"
+ )
+@@ -47,3 +54,68 @@ func TestStart(t *testing.T) {
+ 	conn.Close()
+ 
+ }
++
++func TestStartTCP(t *testing.T) {
++	assert := assert.New(t)
++
++	listener, err := net.Listen("tcp", "127.0.0.1:0")
++	assert.NoError(err)
++	defer listener.Close()
++
++	conn, err := Connect(map[string]interface{}{
++		"type":    "tcp",
++		"address": listener.Addr().String(),
++	})
++	assert.NoError(err)
++
++	server, err := listener.Accept()
++	assert.NoError(err)
++
++	node := &runtime.Node{
++		Nodeinfo: &data.Nodeinfo{
++			NodeID:   "73deadbeaf13",
++			Hostname: "inject-test",
++		},
++	}
++	conn.InsertNode(node)
++
++	// receive the framed package and verify its content
++	raw, err := respond.ReadFrame(server)
++	assert.NoError(err)
++
++	deflater := flate.NewReader(bytes.NewReader(raw))
++	jsonData, err := io.ReadAll(deflater)
++	assert.NoError(err)
++
++	res := &data.ResponseData{}
++	assert.NoError(json.Unmarshal(jsonData, res))
++	assert.Equal("73deadbeaf13", res.Nodeinfo.NodeID)
++
++	// break the connection and expect the sender to dial again
++	assert.NoError(server.Close())
++
++	accepted := make(chan net.Conn, 1)
++	go func() {
++		if c, err := listener.Accept(); err == nil {
++			accepted <- c
++		}
++	}()
++
++	var server2 net.Conn
++	for i := 0; i < 100 && server2 == nil; i++ {
++		conn.InsertNode(node)
++		select {
++		case server2 = <-accepted:
++		case <-time.After(time.Millisecond * 50):
++		}
++	}
++	if !assert.NotNil(server2, "sender did not reconnect") {
++		return
++	}
++
++	raw, err = respond.ReadFrame(server2)
++	assert.NoError(err)
++	assert.NotNil(raw)
++
++	conn.Close()
++}
+diff --git a/docs/docs/configuration.md b/docs/docs/configuration.md
+index bf7ee97..72f5dda 100644
+--- a/docs/docs/configuration.md
++++ b/docs/docs/configuration.md
+@@ -17,6 +17,10 @@ synchronize    = "1m" # (2)
+ # how often request per multicast
+ collect_interval = "1m" # (3)
+ 
++# listen on tcp addresses to receive respondd packages
++# from other yanic instances
++#tcp_listen = ["[::]:11001"] # (13)
++
+ # If you have custom respondd fields, you can ask Yanic to also collect these.
+ #[[respondd.custom_field]] (4)
+ #name = zip
+@@ -100,6 +104,13 @@ ip_address        = "fd2f:5119:f2d::5" # (9)
+ 12. Define a port to listen and send the respondd packages.
+     If not set or set to 0 the kernel will use a random free port at its own.
+ 
++13. List of tcp addresses to listen on for respondd packages from other
++    yanic instances (yanic-to-yanic communication).
++    The sending yanic instance needs a `[[database.connection.respondd]]`
++    with a tcp `type`. On tcp connections every respondd package is
++    length-prefixed (framed), so this listener only understands yanic
++    senders, not plain respondd nodes.
++
+ ## [webserver]
+ Yanic has a little build-in webserver, which statically serves a directory.
+ This is useful for testing purposes or for a little standalone installation.
+@@ -499,6 +510,12 @@ address  = "stats.bremen.freifunk.net:11001" # (2)
+ 
+     Known networks are "tcp", "tcp4" (IPv4-only), "tcp6" (IPv6-only), "udp", "udp4" (IPv4-only), "udp6" (IPv6-only), "ip", "ip4" (IPv4-only), "ip6" (IPv6-only), "unix", "unixgram" and "unixpacket".
+ 
++    On stream networks ("tcp", "tcp4", "tcp6" and "unix") every respondd
++    package is sent as a length-prefixed frame and the connection is dialed
++    again if it breaks. Use the `tcp_listen` option of `[respondd]` on the
++    receiving yanic instance for this - a plain respondd/hopglass receiver
++    only understands the datagram types like "udp6".
++
+ 2.  Destination address to connect/send respondd package.
+ 
+ 
+diff --git a/respond/collector.go b/respond/collector.go
+index ae9b22d..8c52c03 100644
+--- a/respond/collector.go
++++ b/respond/collector.go
+@@ -1,8 +1,11 @@
+ package respond
+ 
+ import (
++	"errors"
+ 	"fmt"
++	"io"
+ 	"net"
++	"sync"
+ 	"time"
+ 
+ 	"golang.org/x/sys/unix"
+@@ -19,6 +22,10 @@ import (
+ type Collector struct {
+ 	connections []multicastConn // UDP sockets
+ 
++	tcpListeners []net.Listener // TCP listeners for yanic-to-yanic communication
++	tcpConns     map[net.Conn]interface{}
++	tcpConnsMux  sync.Mutex
++
+ 	queue    chan *Response // received responses
+ 	db       database.Connection
+ 	nodes    *runtime.Nodes
+@@ -37,17 +44,22 @@ type multicastConn struct {
+ func NewCollector(db database.Connection, nodes *runtime.Nodes, config *Config) *Collector {
+ 
+ 	coll := &Collector{
+-		db:     db,
+-		nodes:  nodes,
+-		queue:  make(chan *Response, 400),
+-		stop:   make(chan interface{}),
+-		config: config,
++		db:       db,
++		nodes:    nodes,
++		queue:    make(chan *Response, 400),
++		stop:     make(chan interface{}),
++		config:   config,
++		tcpConns: make(map[net.Conn]interface{}),
+ 	}
+ 
+ 	for _, iface := range config.Interfaces {
+ 		coll.listenUDP(iface)
+ 	}
+ 
++	for _, address := range config.TCPListen {
++		coll.listenTCP(address)
++	}
++
+ 	go coll.parser()
+ 
+ 	if coll.db != nil {
+@@ -117,6 +129,79 @@ func (coll *Collector) listenUDP(iface InterfaceConfig) {
+ 	go coll.receiver(conn)
+ }
+ 
++// listenTCP starts a TCP listener to receive framed respondd packages
++// from other yanic instances (see database/respondd with a tcp type)
++func (coll *Collector) listenTCP(address string) {
++	listener, err := net.Listen("tcp", address)
++	if err != nil {
++		log.WithField("address", address).Panic(err)
++	}
++
++	coll.tcpListeners = append(coll.tcpListeners, listener)
++
++	// Start acceptor
++	go coll.acceptTCP(listener)
++}
++
++func (coll *Collector) acceptTCP(listener net.Listener) {
++	for {
++		conn, err := listener.Accept()
++		if err != nil {
++			select {
++			case <-coll.stop:
++			default:
++				log.WithError(err).WithField("local", listener.Addr()).Error("Accept failed")
++			}
++			return
++		}
++
++		coll.tcpConnsMux.Lock()
++		coll.tcpConns[conn] = nil
++		coll.tcpConnsMux.Unlock()
++
++		go coll.receiverTCP(conn)
++	}
++}
++
++func (coll *Collector) receiverTCP(conn net.Conn) {
++	defer func() {
++		coll.tcpConnsMux.Lock()
++		delete(coll.tcpConns, conn)
++		coll.tcpConnsMux.Unlock()
++		if err := conn.Close(); err != nil && !errors.Is(err, net.ErrClosed) {
++			log.WithError(err).Error("close of tcp connection")
++		}
++	}()
++
++	src := &net.UDPAddr{Port: PortDefault}
++	if addr, ok := conn.RemoteAddr().(*net.TCPAddr); ok {
++		src.IP = addr.IP
++		src.Zone = addr.Zone
++	}
++
++	for {
++		raw, err := ReadFrame(conn)
++		if err != nil {
++			if err != io.EOF && !errors.Is(err, net.ErrClosed) {
++				log.WithError(err).WithFields(map[string]interface{}{
++					"local":  conn.LocalAddr(),
++					"remote": conn.RemoteAddr(),
++				}).Error("ReadFrame failed")
++			}
++			return
++		}
++
++		select {
++		case coll.queue <- &Response{
++			Address: src,
++			Raw:     raw,
++		}:
++		case <-coll.stop:
++			return
++		}
++	}
++}
++
+ // Returns a unicast address of given interface (linklocal or global unicast address)
+ func getUnicastAddr(iface *net.Interface) (net.IP, error) {
+ 	addresses, err := iface.Addrs()
+@@ -164,6 +249,18 @@ func (coll *Collector) Close() {
+ 			log.WithError(err).Error("close during collector sockets")
+ 		}
+ 	}
++	for _, listener := range coll.tcpListeners {
++		if err := listener.Close(); err != nil {
++			log.WithError(err).Error("close during collector tcp listeners")
++		}
++	}
++	coll.tcpConnsMux.Lock()
++	for conn := range coll.tcpConns {
++		if err := conn.Close(); err != nil {
++			log.WithError(err).Error("close during collector tcp connections")
++		}
++	}
++	coll.tcpConnsMux.Unlock()
+ 	close(coll.queue)
+ }
+ 
+diff --git a/respond/collector_test.go b/respond/collector_test.go
+index 6b74dd5..85daaac 100644
+--- a/respond/collector_test.go
++++ b/respond/collector_test.go
+@@ -1,6 +1,7 @@
+ package respond
+ 
+ import (
++	"net"
+ 	"os"
+ 	"testing"
+ 	"time"
+@@ -30,6 +31,48 @@ func TestCollector(t *testing.T) {
+ 	collector.Close()
+ }
+ 
++func TestCollectorTCP(t *testing.T) {
++	assert := assert.New(t)
++
++	nodes := runtime.NewNodes(&runtime.NodesConfig{})
++	config := &Config{
++		TCPListen: []string{"127.0.0.1:0"},
++	}
++
++	collector := NewCollector(nil, nodes, config)
++	defer collector.Close()
++
++	// read testdata
++	compressed, err := os.ReadFile("testdata/nodeinfo.flated")
++	assert.NoError(err)
++
++	// send a framed respondd package like another yanic instance
++	conn, err := net.Dial("tcp", collector.tcpListeners[0].Addr().String())
++	assert.NoError(err)
++	assert.NoError(WriteFrame(conn, compressed))
++	assert.NoError(conn.Close())
++
++	// wait until the package is received and parsed
++	deadline := time.After(time.Second * 5)
++	for {
++		nodes.RLock()
++		node := nodes.List["f81a67a5e9c1"]
++		nodes.RUnlock()
++		if node != nil {
++			assert.NotNil(node.Nodeinfo)
++			assert.Equal("f81a67a5e9c1", node.Nodeinfo.NodeID)
++			break
++		}
++		select {
++		case <-deadline:
++			assert.Fail("no node received over tcp")
++			return
++		default:
++			time.Sleep(time.Millisecond * 10)
++		}
++	}
++}
++
+ func TestParse(t *testing.T) {
+ 	assert := assert.New(t)
+ 
+diff --git a/respond/config.go b/respond/config.go
+index 2377f28..a5e0917 100644
+--- a/respond/config.go
++++ b/respond/config.go
+@@ -6,6 +6,7 @@ type Config struct {
+ 	Enable          bool                  `toml:"enable"`
+ 	Synchronize     duration.Duration     `toml:"synchronize"`
+ 	Interfaces      []InterfaceConfig     `toml:"interfaces"`
++	TCPListen       []string              `toml:"tcp_listen"`
+ 	Sites           map[string]SiteConfig `toml:"sites"`
+ 	CollectInterval duration.Duration     `toml:"collect_interval"`
+ 	CustomFields    []CustomFieldConfig   `toml:"custom_field"`
+diff --git a/respond/respond.go b/respond/respond.go
+index de276a0..76196f2 100644
+--- a/respond/respond.go
++++ b/respond/respond.go
+@@ -3,7 +3,9 @@ package respond
+ import (
+ 	"bytes"
+ 	"compress/flate"
++	"encoding/binary"
+ 	"encoding/json"
++	"fmt"
+ 	"io"
+ 	"net"
+ 
+@@ -24,6 +26,44 @@ const (
+ 	MaxDataGramSize = 8192
+ )
+ 
++// frameHeaderSize is the size of the length prefix of a respondd frame
++// on stream connections (e.g. TCP) between yanic instances
++const frameHeaderSize = 4
++
++// WriteFrame writes a raw respondd package as a length-prefixed frame to a
++// stream connection (e.g. TCP). Stream connections have no message boundaries,
++// so each package is prefixed with its size as big endian uint32.
++func WriteFrame(w io.Writer, raw []byte) error {
++	if len(raw) > MaxDataGramSize {
++		return fmt.Errorf("frame of %d bytes exceeds maximum of %d bytes", len(raw), MaxDataGramSize)
++	}
++	header := make([]byte, frameHeaderSize)
++	binary.BigEndian.PutUint32(header, uint32(len(raw)))
++	if _, err := w.Write(header); err != nil {
++		return err
++	}
++	_, err := w.Write(raw)
++	return err
++}
++
++// ReadFrame reads a length-prefixed respondd frame written by WriteFrame
++// from a stream connection (e.g. TCP)
++func ReadFrame(r io.Reader) ([]byte, error) {
++	header := make([]byte, frameHeaderSize)
++	if _, err := io.ReadFull(r, header); err != nil {
++		return nil, err
++	}
++	size := binary.BigEndian.Uint32(header)
++	if size == 0 || size > MaxDataGramSize {
++		return nil, fmt.Errorf("invalid frame size: %d", size)
++	}
++	raw := make([]byte, size)
++	if _, err := io.ReadFull(r, raw); err != nil {
++		return nil, err
++	}
++	return raw, nil
++}
++
+ // Response of the respond request
+ type Response struct {
+ 	Address *net.UDPAddr
+diff --git a/respond/respond_test.go b/respond/respond_test.go
+index 73c0415..f9a183a 100644
+--- a/respond/respond_test.go
++++ b/respond/respond_test.go
+@@ -1,6 +1,7 @@
+ package respond
+ 
+ import (
++	"bytes"
+ 	"net"
+ 	"testing"
+ 
+@@ -18,3 +19,40 @@ func TestNewRespone(t *testing.T) {
+ 	assert.Equal("[fe80::2]:8080", data.Address.String())
+ 	assert.Equal([]uint8{0xca, 0x2b, 0xcd, 0xc9, 0xe1, 0x2, 0x0, 0x0, 0x0, 0xff, 0xff}, data.Raw)
+ }
++
++func TestFrame(t *testing.T) {
++	assert := assert.New(t)
++
++	buf := new(bytes.Buffer)
++
++	// roundtrip of two frames on one stream
++	assert.NoError(WriteFrame(buf, []byte("first")))
++	assert.NoError(WriteFrame(buf, []byte("second")))
++
++	raw, err := ReadFrame(buf)
++	assert.NoError(err)
++	assert.Equal([]byte("first"), raw)
++
++	raw, err = ReadFrame(buf)
++	assert.NoError(err)
++	assert.Equal([]byte("second"), raw)
++
++	// empty stream
++	_, err = ReadFrame(buf)
++	assert.Error(err)
++
++	// truncated frame
++	assert.NoError(WriteFrame(buf, []byte("truncated")))
++	buf.Truncate(buf.Len() - 2)
++	_, err = ReadFrame(buf)
++	assert.Error(err)
++
++	// oversized frame is not written
++	assert.Error(WriteFrame(buf, make([]byte, MaxDataGramSize+1)))
++
++	// invalid frame sizes are not read
++	_, err = ReadFrame(bytes.NewReader([]byte{0, 0, 0, 0}))
++	assert.Error(err)
++	_, err = ReadFrame(bytes.NewReader([]byte{0xff, 0xff, 0xff, 0xff}))
++	assert.Error(err)
++}

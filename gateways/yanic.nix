@@ -29,8 +29,8 @@ in
         respondd = [
           {
             enable = true;
-            type = "udp6";
-            address = "monitoring.htz.nbg.infra.as62028.de:10001";
+            type = "tcp";
+            address = "monitoring.htz.nbg.infra.as62028.de:11001";
           }
         ];
       };
