@@ -55,6 +55,14 @@
     ];
   };
 
+  nix.gc = {
+    automatic = true;
+    persistent = false;
+    dates = "weekly";
+    randomizedDelaySec = "2h";
+    options = "--delete-older-than 30d";
+  };
+
   networking.nftables.enable = lib.mkDefault true;
   networking.useNetworkd = lib.mkDefault true;
   systemd.network.enable = lib.mkDefault true;
