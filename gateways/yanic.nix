@@ -1,4 +1,4 @@
-{ config, lib, ... }:
+{ config, ... }:
 let
   meshCfg = config.services.meshGateway;
 in
@@ -10,6 +10,7 @@ in
   services.yanic = {
     enable = true;
     meshviewerExport = true;
+
     settings = {
       database = {
         delete_after = "3650d";
@@ -35,7 +36,12 @@ in
         ];
       };
 
-      nodes.save_interval = "5y"; # Save cannot be disabled, set the time very high
+      nodes = {
+        offline_after = "10m";
+        prune_after = "7d";
+        save_interval = "15s";
+        state_path = "/run/yanic/state.json";
+      };
 
       respondd = {
         collect_interval = "1m";
@@ -53,12 +59,5 @@ in
     };
   };
 
-  networking.firewall.interfaces = lib.listToAttrs (
-    map (
-      domain:
-      lib.nameValuePair domain.batInterface {
-        allowedUDPPorts = [ 10001 ];
-      }
-    ) meshCfg.domains
-  );
+  services.meshGateway.allowedUDPPorts = [ 10001 ];
 }

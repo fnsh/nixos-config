@@ -28,19 +28,21 @@ in
       path = "/srv/yanic/meshviewer.json";
       filter.no_owner = true;
     };
-    systemd.mounts = lib.mkIf cfg.meshviewerExport [
-      {
+
+    systemd.mounts = (
+      lib.optional cfg.meshviewerExport {
         what = "tmpfs";
         where = "/srv/yanic";
         options = "mode=777";
         type = "tmpfs";
       }
-    ];
+    );
+
     systemd.services.yanic = {
       wants = [
         "network-online.target"
-      ]
-      ++ (lib.optional cfg.meshviewerExport "srv-yanic.mount");
+      ];
+      requires = (lib.optional cfg.meshviewerExport "srv-yanic.mount");
 
       wantedBy = [ "multi-user.target" ];
 
