@@ -1,6 +1,7 @@
-{ config, ... }:
+{ lib, config, ... }:
 let
   cfg = config.services.meshGateway;
+  dhcpDomains = lib.filter (dom: dom.id != 20) cfg.domains;
 
   mkKeaSubnet = domain: {
     id = domain.id;
@@ -13,7 +14,11 @@ let
       }
       {
         name = "domain-name-servers";
-        data = "10.${toString (domain.id * 10)}.0.254";
+        data = domain.nextnode.v4;
+      }
+      {
+        name = "domain-name";
+        data = "ffda.io";
       }
       {
         name = "interface-mtu";
@@ -44,16 +49,16 @@ in
 
       interfaces-config = {
         dhcp-socket-type = "raw";
-        interfaces = map (domain: domain.batInterface) cfg.domains;
+        interfaces = map (domain: domain.batInterface) dhcpDomains;
       };
 
-      subnet4 = map mkKeaSubnet cfg.domains;
+      subnet4 = map mkKeaSubnet dhcpDomains;
     };
   };
 
   systemd.services.kea-dhcp4-server =
     let
-      waitUnits = map (dom: "systemd-networkd-wait-online@${dom.batInterface}.service") cfg.domains;
+      waitUnits = map (dom: "systemd-networkd-wait-online@${dom.batInterface}.service") dhcpDomains;
     in
     {
       after = waitUnits;

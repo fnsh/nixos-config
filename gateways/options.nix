@@ -49,6 +49,13 @@ let
       subnet6.public = ipOptions;
       subnet6.ula = ipOptions;
 
+      nextnode.v6 = lib.mkOption {
+        type = lib.types.singleLineStr;
+      };
+      nextnode.v4 = lib.mkOption {
+        type = lib.types.singleLineStr;
+      };
+
       mac = lib.mkOption {
         type = lib.types.singleLineStr;
         description = "Mac Address for batman interface";

@@ -32,6 +32,11 @@ let
     subnet6.public = mkSubnet6 "2a13:fcc0:2ed8:10${hexOctet id}";
     subnet6.ula = mkSubnet6 "fd01:67c:2ed8:10${hexOctet id}";
 
+    nextnode = {
+      v6 = "fd01:67c:2ed8:10${hexOctet id}::1:1";
+      v4 = "10.${toString (id * 10)}.0.254";
+    };
+
     mac = "da:ff:00:00:0${toString cfg.gwId}:${hexOctet id}";
   };
   domains = map mkDomain (lib.range 1 numDomains);
