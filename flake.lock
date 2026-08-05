@@ -23,6 +23,26 @@
         "type": "github"
       }
     },
+    "avis": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1785970585,
+        "narHash": "sha256-L6xqb6ZH9Rt/7hyo8WwUhF9fnHPZcdwhdVmqegE+FOw=",
+        "owner": "fnsh",
+        "repo": "avis",
+        "rev": "d105c5fa9f5bc2ee40e3ab51acb57cd071cdf802",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fnsh",
+        "repo": "avis",
+        "type": "github"
+      }
+    },
     "colmena": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -196,6 +216,7 @@
     "root": {
       "inputs": {
         "agenix": "agenix",
+        "avis": "avis",
         "colmena": "colmena",
         "disko": "disko",
         "fastd-server-side-ratelimit": "fastd-server-side-ratelimit",

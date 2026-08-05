@@ -19,6 +19,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    avis = {
+      url = "github:fnsh/avis";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -34,6 +39,7 @@
       colmena,
       disko,
       fastd-server-side-ratelimit,
+      avis,
       agenix,
       ...
     }@inputs:
@@ -99,6 +105,7 @@
           "monitoring" = {
             deployment.targetHost = "monitoring.htz.nbg.infra.as62028.de";
             imports = [
+              avis.nixosModules.default
               ./machines/monitoring
             ];
           };
