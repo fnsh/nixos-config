@@ -1,6 +1,7 @@
 { ... }:
 {
   imports = [
+    ./avis.nix
     ./disko.nix
     ./victoria.nix
     ./victoria-backup.nix
