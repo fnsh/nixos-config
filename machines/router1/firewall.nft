@@ -7,6 +7,10 @@ table inet filter {
 
     tcp dport 22 accept
 
+    # Looking Glass Port
+    ip saddr 91.99.141.138 tcp dport 58353 accept
+    ip6 saddr 2a01:4f8:1c19:cfee::1 tcp dport 58353 accept
+
     # Allow ICMP on all interfaces
     ip protocol icmp accept
     ip6 nexthdr icmpv6 accept

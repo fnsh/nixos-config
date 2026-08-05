@@ -1,4 +1,9 @@
-{ lib, pkgs, ... }:
+{
+  lib,
+  pkgs,
+  inputs,
+  ...
+}:
 let
   mkMac =
     vlan:
@@ -24,6 +29,18 @@ let
 in
 {
   networking.hostName = "router1";
+
+  imports = [
+    inputs.avis.nixosModules.default
+  ];
+
+  services.avis.collector = {
+    enable = true;
+    routingVRF = "vrf-as62028";
+    allowRequests = [
+      "91.99.141.138/32"
+    ];
+  };
 
   environment.systemPackages = with pkgs; [
     wireguard-tools
@@ -215,6 +232,10 @@ in
     # Disable reverse path filtering
     "net.ipv4.conf.all.rp_filter" = 0;
     "net.ipv4.conf.default.rp_filter" = 0;
+
+    # Allow services in default vrf to receive
+    # traffic from routing vrf
+    "net.ipv4.tcp_l3mdev_accept" = 1;
 
     # Enable RP-Filtering for frontend interface to prevent IP spoofing
     "net.ipv4.conf.frontend.rp_filter" = 1;
