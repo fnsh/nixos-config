@@ -41,8 +41,14 @@ in
 
         "10-frontend" = {
           matchConfig.MACAddress = mkMac 110;
-          linkConfig.Name = "frontend";
-          linkConfig.MTUBytes = 9000;
+          linkConfig = {
+            Name = "frontend";
+            MTUBytes = 9000;
+            GenericSegmentationOffload = false;
+            LargeReceiveOffload = false;
+            GenericReceiveOffload = false;
+            TCPSegmentationOffload = false;
+          };
         };
 
         "10-mesh" = {

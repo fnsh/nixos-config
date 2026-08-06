@@ -42,7 +42,13 @@ in
 
   systemd.network.links."15-ipxlat" = {
     matchConfig.Name = siitDevice;
-    linkConfig.MTUBytes = 9000;
+    linkConfig = {
+      MTUBytes = 9000;
+      GenericSegmentationOffload = false;
+      LargeReceiveOffload = false;
+      GenericReceiveOffload = false;
+      TCPSegmentationOffload = false;
+    };
   };
   systemd.network.networks."15-ipxlat" = {
     matchConfig.Name = siitDevice;
