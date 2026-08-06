@@ -49,6 +49,5 @@ table inet filter {
     oifname { "configo-peer", "interlink-peer" } ip protocol icmp accept
     oifname { "configo-peer", "interlink-peer" } ip6 nexthdr icmpv6 accept
     oifname { "configo-peer", "interlink-peer" } tcp dport 179 accept
-    oifname { "configo-peer", "interlink-peer" } drop
   }
 }
