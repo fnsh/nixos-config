@@ -43,8 +43,7 @@ in
 
       lease-database = {
         type = "memfile";
-        persist = true;
-        name = "/var/lib/kea/dhcp4.leases";
+        persist = false;
       };
 
       interfaces-config = {

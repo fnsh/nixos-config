@@ -48,13 +48,13 @@
   ];
 
   system.disableInstallerTools = true;
+
   nix.settings = {
     experimental-features = [
       "nix-command"
       "flakes"
     ];
   };
-
   nix.gc = {
     automatic = true;
     persistent = false;
@@ -62,6 +62,8 @@
     randomizedDelaySec = "2h";
     options = "--delete-older-than 30d";
   };
+
+  boot.tmp.useTmpfs = true;
 
   networking.nftables.enable = lib.mkDefault true;
   networking.useNetworkd = lib.mkDefault true;

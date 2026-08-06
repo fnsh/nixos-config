@@ -1,10 +1,42 @@
 { ... }:
 {
+  imports = [
+    ./impermanence.nix
+  ];
+
   networking.firewall.interfaces."mgmt".allowedTCPPorts = [ 22 ];
 
   # No logging to disk
   services.journald.storage = "volatile";
 
+  # Disable ssh access logs
+  services.logrotate.enable = false;
+  systemd.tmpfiles.rules = [
+    "L /var/log/wtmp - - - - /dev/null"
+    "L /var/log/btmp - - - - /dev/null"
+    "L /var/log/lastlog - - - - /dev/null"
+  ];
+
+  services.impermanence = {
+    enable = true;
+    persist = [
+      "/nix"
+      "/etc/ssh"
+    ];
+  };
+  fileSystems."/" = {
+    device = "none";
+    fsType = "tmpfs";
+    options = [
+      "defaults"
+      "size=25%"
+      "mode=755"
+      "noatime"
+    ];
+    neededForBoot = true;
+  };
+
+  fileSystems."/mnt/persist".neededForBoot = true;
   disko.devices = {
     disk = {
       main = {
@@ -21,7 +53,10 @@
                 type = "filesystem";
                 format = "vfat";
                 mountpoint = "/boot";
-                mountOptions = [ "umask=0077" ];
+                mountOptions = [
+                  "umask=0077"
+                  "noatime"
+                ];
               };
             };
             root = {
@@ -29,7 +64,8 @@
               content = {
                 type = "filesystem";
                 format = "ext4";
-                mountpoint = "/";
+                mountpoint = "/mnt/persist";
+                mountOptions = [ "noatime" ];
               };
             };
           };
