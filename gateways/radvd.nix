@@ -10,7 +10,7 @@ let
       AdvDefaultPreference high;
       AdvDefaultLifetime 1800;
 
-      RDNSS ${domain.nextnode.v6} {
+      RDNSS ${if domain.id == 20 then "2a13:fcc0:2ed8:1014::1:1" else domain.nextnode.v6} {
         AdvRDNSSLifetime 3600;
         FlushRDNSS off;
       };
@@ -30,15 +30,13 @@ let
           ""
       }
 
-      ${lib.concatMapStringsSep "\n" (net: ''
-        prefix ${net.subnetCidr} {
-          AdvOnLink on;
-          AdvAutonomous on;
-          AdvValidLifetime 3600;
-          AdvPreferredLifetime 1800;
-          DeprecatePrefix off;
-        };
-      '') (lib.attrValues domain.subnet6)}
+      prefix ${domain.subnet6.public.subnetCidr} {
+        AdvOnLink on;
+        AdvAutonomous on;
+        AdvValidLifetime 3600;
+        AdvPreferredLifetime 1800;
+        DeprecatePrefix off;
+      };
     };
   '';
 in
