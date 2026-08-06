@@ -59,7 +59,6 @@ let
           "cap_net_bind_service"
         ];
         DynamicUser = true;
-        BindPaths = "/etc/fastd";
       };
     };
 in
