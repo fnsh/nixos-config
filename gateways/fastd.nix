@@ -103,8 +103,8 @@ in
         }
         {
           target = "ramips";
-          initialDownstreamRate = 7000;
-          initialUpstreamRate = 2000;
+          initialDownstreamRate = 15000;
+          initialUpstreamRate = 4000;
         }
         {
           target = "ramips";
