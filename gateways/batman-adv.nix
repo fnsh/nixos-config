@@ -17,7 +17,7 @@ let
       };
       batmanAdvancedConfig = {
         GatewayMode = "server";
-        HopPenalty = 60;
+        HopPenalty = 5;
         RoutingAlgorithm = "batman-iv";
         OriginatorIntervalSec = "5s";
       };
