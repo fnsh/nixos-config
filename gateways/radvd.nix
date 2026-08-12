@@ -1,7 +1,5 @@
 { config, lib, ... }:
 let
-  meshCfg = config.services.meshGateway;
-
   mkRadvdSubnet = domain: ''
     interface ${domain.batInterface} {
       AdvSendAdvert on;
@@ -10,7 +8,7 @@ let
       AdvDefaultPreference high;
       AdvDefaultLifetime 1800;
 
-      RDNSS ${if domain.id == 20 then "2a13:fcc0:2ed8:1014::1:1" else domain.nextnode.v6} {
+      RDNSS ${domain.nextnode.v6} {
         AdvRDNSSLifetime 3600;
         FlushRDNSS off;
       };
@@ -30,7 +28,7 @@ let
           ""
       }
 
-      prefix ${domain.subnet6.public.subnetCidr} {
+      prefix ${domain.subnet6.public}::/64 {
         AdvOnLink on;
         AdvAutonomous on;
         AdvValidLifetime 3600;
@@ -43,6 +41,8 @@ in
 {
   services.radvd = {
     enable = true;
-    config = lib.concatStringsSep "\n" (map mkRadvdSubnet meshCfg.domains);
+    config = lib.concatStringsSep "\n" (
+      map mkRadvdSubnet (builtins.attrValues config.fnsh.sites.fnsh.domains)
+    );
   };
 }

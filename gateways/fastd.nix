@@ -6,6 +6,7 @@
 }:
 let
   meshCfg = config.services.meshGateway;
+  domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
 
   mkFastdConf =
     domain:
@@ -71,8 +72,8 @@ in
 
     environment.systemPackages = [ pkgs.fastd ];
 
-    systemd.services = lib.listToAttrs (map mkFastdService meshCfg.domains);
-    networking.firewall.interfaces.frontend.allowedUDPPorts = map (dom: dom.fastdPort) meshCfg.domains;
+    systemd.services = lib.listToAttrs (map mkFastdService domains);
+    networking.firewall.interfaces.frontend.allowedUDPPorts = map (dom: dom.fastdPort) domains;
 
     networking.firewall.interfaces."fastd-*".allowedUDPPorts = [ 42453 ];
     services.fastd-server-side-ratelimit = {

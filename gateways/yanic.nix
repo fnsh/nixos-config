@@ -1,6 +1,6 @@
 { config, ... }:
 let
-  meshCfg = config.services.meshGateway;
+  domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
 in
 {
   imports = [
@@ -49,13 +49,13 @@ in
         synchronize = "1m";
       };
 
-      respondd.sites.default.domains = map (domain: "dom${toString domain.id}") meshCfg.domains;
+      respondd.sites.default.domains = map (domain: "dom${toString domain.id}") domains;
 
       respondd.interfaces = map (domain: {
         ifname = domain.batInterface;
         multicast_address = "ff05::2:1001";
         port = 10001;
-      }) meshCfg.domains;
+      }) domains;
     };
   };
 

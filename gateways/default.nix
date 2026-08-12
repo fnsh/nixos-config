@@ -10,7 +10,6 @@
     ./options.nix
     ./mesh-vxlan.nix
     ./meshviewer.nix
-    ./domains.nix
     ./network.nix
     ./radvd.nix
     ./yanic.nix

@@ -5,7 +5,10 @@
   ...
 }:
 let
+  hexOctet = id: if id > 15 then lib.toHexString id else "0${lib.toHexString id}";
+
   meshCfg = config.services.meshGateway;
+  domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
 
   mkDomainBatInterface =
     domain:
@@ -13,7 +16,7 @@ let
       netdevConfig = {
         Name = domain.batInterface;
         Kind = "batadv";
-        MACAddress = domain.mac;
+        MACAddress = "da:ff:00:00:0${toString meshCfg.gwId}:${hexOctet domain.id}";
       };
       batmanAdvancedConfig = {
         GatewayMode = "server";
@@ -47,26 +50,21 @@ in
     environment.systemPackages = [ pkgs.batctl ];
 
     systemd.network = {
-      networks = lib.listToAttrs (map mkNodePeerNetwork meshCfg.domains);
-      netdevs = lib.listToAttrs (map mkDomainBatInterface meshCfg.domains);
+      networks = lib.listToAttrs (map mkNodePeerNetwork domains);
+      netdevs = lib.listToAttrs (map mkDomainBatInterface domains);
     };
 
     services.batman-route-sync = {
       enable = true;
-      meshInterfaces = map (dom: dom.batInterface) meshCfg.domains;
+      meshInterfaces = map (dom: dom.batInterface) domains;
       vpnPrefixes = [
         "fastd"
       ];
       targetRouteTable = 1337;
     };
 
-    systemd.services."bat-enable-mff" = {
-      script = lib.concatMapStringsSep "\n" (
-        dom: "${lib.getExe pkgs.batctl} meshif ${dom.batInterface} mff 1"
-      ) meshCfg.domains;
-
-      after = [ "network-online.target" ]; # Wait for networkd to configure bat interfaces
-      wantedBy = [ "multi-user.target" ];
-    };
+    networking.localCommands = lib.concatMapStringsSep "\n" (
+      dom: "${lib.getExe pkgs.batctl} meshif ${dom.batInterface} mff 1"
+    ) domains;
   };
 }

@@ -1,6 +1,7 @@
 { config, lib, ... }:
 let
   meshCfg = config.services.meshGateway;
+  domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
 
   poolOffset = 1 + (meshCfg.gwId * 2);
   gwAddr4 = "194.180.249.${toString poolOffset}/24";
@@ -10,9 +11,7 @@ let
 
   mkMac = vlan: "da:ff:${lib.toHexString vlan}:2${toString meshCfg.gwId}:00:01";
 
-  nftBatInterfaces = lib.concatMapStringsSep "," (
-    domain: "\"${domain.batInterface}\""
-  ) meshCfg.domains;
+  nftBatInterfaces = lib.concatMapStringsSep "," (domain: "\"${domain.batInterface}\"") domains;
 
   mkDomainNetwork =
     domain:
@@ -23,10 +22,10 @@ let
         DHCP = false;
       };
       address = [
-        "${domain.subnet4.gatewayAddress}/20"
-        domain.subnet6.public.gatewayAddress
-        domain.subnet6.ula.gatewayAddress
-      ];
+        "${domain.subnet6.public}::${toString meshCfg.gwId}/64"
+        "${domain.subnet6.ula}::${toString meshCfg.gwId}/64"
+      ]
+      ++ lib.optional (domain.subnet4 != null) "${domain.subnet4}.0.${toString meshCfg.gwId}/20";
     };
 in
 {
@@ -65,7 +64,7 @@ in
         };
       };
 
-      networks = (lib.listToAttrs (map mkDomainNetwork meshCfg.domains)) // {
+      networks = (lib.listToAttrs (map mkDomainNetwork domains)) // {
         "25-anycast" = {
           matchConfig.Name = "anycast";
           address = [
@@ -125,7 +124,7 @@ in
             LinkLocalAddressing = "ipv6";
             IPv6AcceptRA = false;
             DHCP = false;
-            VXLAN = map (domain: domain.vxlan.interface) meshCfg.domains;
+            VXLAN = map (domain: domain.vxlan.interface) domains;
           };
         };
       };

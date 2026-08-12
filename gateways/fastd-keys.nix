@@ -5,9 +5,9 @@
   ...
 }:
 let
-  fastdServices = lib.concatMapStringsSep " " (
-    domain: "fastd-dom${toString domain.id}.service"
-  ) config.services.meshGateway.domains;
+  fastdServices = lib.concatMapStringsSep " " (domain: "fastd-dom${toString domain.id}.service") (
+    builtins.attrValues config.fnsh.sites.fnsh.domains
+  );
 in
 {
   systemd.timers.fastd-key-update = {

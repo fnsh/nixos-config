@@ -90,6 +90,7 @@
               agenix.nixosModules.default
               ./modules/common
               ./modules/collector.nix
+              ./sites
             ];
           };
 

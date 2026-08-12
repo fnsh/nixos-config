@@ -1,6 +1,6 @@
 { config, lib, ... }:
 let
-  meshCfg = config.services.meshGateway;
+  domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
 
   mkMeshNetDev = domain: {
     netdevConfig = {
@@ -33,15 +33,13 @@ let
   };
 in
 {
-  networking.firewall.interfaces.mesh.allowedUDPPorts = map (
-    domain: domain.vxlan.port
-  ) meshCfg.domains;
+  networking.firewall.interfaces.mesh.allowedUDPPorts = map (domain: domain.vxlan.port) domains;
 
   systemd.network.netdevs = builtins.listToAttrs (
-    map (dom: lib.nameValuePair "40-vxlan-dom${toString dom.id}" (mkMeshNetDev dom)) meshCfg.domains
+    map (dom: lib.nameValuePair "40-vxlan-dom${toString dom.id}" (mkMeshNetDev dom)) domains
   );
 
   systemd.network.networks = builtins.listToAttrs (
-    map (dom: lib.nameValuePair "40-vxlan-dom${toString dom.id}" (mkMeshNetwork dom)) meshCfg.domains
+    map (dom: lib.nameValuePair "40-vxlan-dom${toString dom.id}" (mkMeshNetwork dom)) domains
   );
 }

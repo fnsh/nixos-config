@@ -1,31 +1,43 @@
 { lib, config, ... }:
 let
   cfg = config.services.meshGateway;
-  dhcpDomains = lib.filter (dom: dom.id != 20) cfg.domains;
+  dhcpDomains = lib.filter (dom: dom.subnet4 != null) (
+    builtins.attrValues config.fnsh.sites.fnsh.domains
+  );
 
-  mkKeaSubnet = domain: {
-    id = domain.id;
-    subnet = domain.subnet4.subnetCidr;
-    pools = [ { pool = "${domain.subnet4.dhcpStart} - ${domain.subnet4.dhcpEnd}"; } ];
-    option-data = [
-      {
-        name = "routers";
-        data = domain.subnet4.gatewayAddress;
-      }
-      {
-        name = "domain-name-servers";
-        data = domain.nextnode.v4;
-      }
-      {
-        name = "domain-name";
-        data = "ffda.io";
-      }
-      {
-        name = "interface-mtu";
-        data = "1280";
-      }
-    ];
-  };
+  mkKeaSubnet =
+    domain:
+    let
+      dhcpNet = "${domain.subnet4}.${toString cfg.gwId}";
+      subnetCidr = "${domain.subnet4}.0.0/20";
+      gatewayAddress = "${domain.subnet4}.0.${toString cfg.gwId}";
+      dhcpStart = "${dhcpNet}.0";
+      dhcpEnd = "${dhcpNet}.255";
+
+    in
+    {
+      id = domain.id;
+      subnet = subnetCidr;
+      pools = [ { pool = "${dhcpStart} - ${dhcpEnd}"; } ];
+      option-data = [
+        {
+          name = "routers";
+          data = gatewayAddress;
+        }
+        {
+          name = "domain-name-servers";
+          data = domain.nextnode.v4;
+        }
+        {
+          name = "domain-name";
+          data = "ffda.io";
+        }
+        {
+          name = "interface-mtu";
+          data = "1280";
+        }
+      ];
+    };
 in
 {
   services.meshGateway.allowedUDPPorts = [ 67 ];
