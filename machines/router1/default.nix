@@ -207,33 +207,7 @@ in
 
   services.bird = {
     enable = true;
-    config = lib.strings.concatStrings [
-      (builtins.readFile ./bird.conf)
-      ''
-        protocol ospf v3 core_ospf {
-          ecmp yes;
-          vrf "vrf-as62028";
-
-          ipv6 {
-            import all;
-            export none;
-          };
-
-          area 0.0.0.0 {
-            interface "frontend" {
-              type broadcast;
-
-              cost       10;
-              hello      10;
-              wait       40;
-              dead count 4;
-
-              priority 10;
-            };
-          };
-        }
-      ''
-    ];
+    config = builtins.readFile ./bird.conf;
   };
 
   services.prometheus.exporters.bird = {
