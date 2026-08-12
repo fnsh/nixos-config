@@ -10,6 +10,7 @@
     ./ping.nix
     ./yanic.nix
     ./meshviewer.nix
+    ./tiles.nix
   ];
 
   networking.hostName = "monitoring";

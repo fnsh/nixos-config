@@ -379,12 +379,32 @@ let
     mapLayers = [
       {
         config = {
-          attribution = "Map data (c) <a href\"https://openstreetmap.org\">OpenStreetMap</a> contributor";
+          attribution = "Map data &copy <a href=\"https://openstreetmap.org/copyright\">OpenStreetMap</a> contributors";
           maxZoom = 19;
           type = "osm";
         };
         name = "OpenStreetMap";
-        url = "https://tiles.darmstadt.freifunk.net/osm/{z}/{x}/{y}.png";
+        url = "https://tiles.map.as62028.de/osm/{z}/{x}/{y}";
+      }
+      {
+        name = "BaseMap.de Vektor Light";
+        url = "https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/styles/bm_web_col.json";
+        type = "vector";
+        config = {
+          minZoom = 6;
+          maxZoom = 18;
+          attribution = "CC BY 4.0: &copy GeoBasis-DE / <a href=\"https://www.bkg.bund.de/\">BKG</a> (2026) <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a>";
+        };
+      }
+      {
+        name = "BaseMap.de Vektor Dark";
+        url = "https://sgx.geodatenzentrum.de/gdz_basemapde_vektor/styles/bm_web_drk.json";
+        type = "vector";
+        config = {
+          minZoom = 6;
+          maxZoom = 18;
+          attribution = "CC BY 4.0: &copy GeoBasis-DE / <a href=\"https://www.bkg.bund.de/\">BKG</a> (2026) <a href=\"https://creativecommons.org/licenses/by/4.0/\">CC BY 4.0</a>";
+        };
       }
     ];
     maxAge = 21;
@@ -438,6 +458,15 @@ let
         ];
       }
     ];
+    nodeInfos = [
+      {
+        "name" = "Stats";
+        "title" = "Statistiken in Grafana öffnen";
+        "href" =
+          "https://stats.as62028.de/d/000000028/knoten?orgId=2&from=now-7d&to=now-1m&var-node={NODE_ID}";
+      }
+    ];
+
     linkCharts = [
       {
         name = "TQ";
@@ -485,7 +514,13 @@ let
       }
     ];
     nodeZoom = 19;
-    siteName = "Freifunk Darmstadt";
+    siteName = "Freie Netze Südhessen";
+    linkList = [
+      {
+        "href" = "https://docs.as62028.de/general/90-imprint/";
+        "title" = "Impressum";
+      }
+    ];
   };
 
   cfg = config.services.meshviewer;

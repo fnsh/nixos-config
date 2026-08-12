@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
+    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     fastd-server-side-ratelimit.url = "github:fnsh/fastd-server-side-ratelimit";
     meshviewer = {
       url = "github:freifunk/meshviewer";
