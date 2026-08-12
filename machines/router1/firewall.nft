@@ -25,7 +25,7 @@ table inet filter {
     iifname { "configo-peer", "interlink-peer" } ip protocol icmp accept
     iifname { "configo-peer", "interlink-peer" } tcp dport 179 accept
 
-    ip6 nexthdr 89 meta mark 0x4f5350 accept
+    ip6 saddr fe80::/64 ip6 nexthdr 89 meta mark 0x4f5350 accept
   }
 
   chain forward {
