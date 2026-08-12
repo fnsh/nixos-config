@@ -32,6 +32,11 @@
       inputs.darwin.follows = "";
       inputs.home-manager.follows = "";
     };
+
+    batman-route-sync = {
+      url = "github:fnsh/batman-route-sync";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs =
@@ -40,6 +45,7 @@
       colmena,
       disko,
       fastd-server-side-ratelimit,
+      batman-route-sync,
       avis,
       agenix,
       ...
@@ -62,6 +68,7 @@
             system.stateVersion = "25.11";
           }
           fastd-server-side-ratelimit.nixosModules.default
+          batman-route-sync.nixosModules.default
           ./modules/proxmox_vm.nix
           ./gateways
         ];

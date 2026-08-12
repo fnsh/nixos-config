@@ -1,4 +1,10 @@
 table inet filter {
+  chain prerouting {
+    type filter hook prerouting priority raw; policy accept;
+
+    iifname "frontend" ip6 nexthdr 89 meta mark set 0x4f5350
+  }
+
   chain input {
     type filter hook input priority 0; policy drop;
 
@@ -18,6 +24,8 @@ table inet filter {
     # Allow BGP on VLAN interfaces (ARP is L2 and not filtered in inet/input)
     iifname { "configo-peer", "interlink-peer" } ip protocol icmp accept
     iifname { "configo-peer", "interlink-peer" } tcp dport 179 accept
+
+    ip6 nexthdr 89 meta mark 0x4f5350 accept
   }
 
   chain forward {

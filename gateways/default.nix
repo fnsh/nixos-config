@@ -4,6 +4,7 @@
     ./fastd.nix
     ./fastd-keys.nix
     ./batman-adv.nix
+    ./bird.nix
     ./dns.nix
     ./dhcp.nix
     ./options.nix

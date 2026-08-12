@@ -51,6 +51,15 @@ in
       netdevs = lib.listToAttrs (map mkDomainBatInterface meshCfg.domains);
     };
 
+    services.batman-route-sync = {
+      enable = true;
+      meshInterfaces = map (dom: dom.batInterface) meshCfg.domains;
+      vpnPrefixes = [
+        "fastd"
+      ];
+      targetRouteTable = 1337;
+    };
+
     systemd.services."bat-enable-mff" = {
       script = lib.concatMapStringsSep "\n" (
         dom: "${lib.getExe pkgs.batctl} meshif ${dom.batInterface} mff 1"

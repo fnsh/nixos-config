@@ -43,7 +43,7 @@ in
           matchConfig.MACAddress = mkMac 110;
           linkConfig = {
             Name = "frontend";
-            MTUBytes = 9000;
+            MTUBytes = 1500;
             GenericSegmentationOffload = false;
             LargeReceiveOffload = false;
             GenericReceiveOffload = false;
@@ -133,6 +133,9 @@ in
 
     networking.firewall.checkReversePath = false;
     networking.firewall.filterForward = false;
+    networking.firewall.extraInputRules = ''
+      iifname "frontend" ip6 nexthdr 89 accept
+    '';
 
     networking.nftables.tables."gw-forward" = {
       family = "inet";

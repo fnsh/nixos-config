@@ -43,6 +43,26 @@
         "type": "github"
       }
     },
+    "batman-route-sync": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1786551214,
+        "narHash": "sha256-4w+FsyrQFcRdGuWGrsF7/SCmJh375cpuMU+OOBdOGcw=",
+        "owner": "fnsh",
+        "repo": "batman-route-sync",
+        "rev": "25ad9f7e969b3768220461207138f3c2a27174ff",
+        "type": "github"
+      },
+      "original": {
+        "owner": "fnsh",
+        "repo": "batman-route-sync",
+        "type": "github"
+      }
+    },
     "colmena": {
       "inputs": {
         "flake-compat": "flake-compat",
@@ -233,6 +253,7 @@
       "inputs": {
         "agenix": "agenix",
         "avis": "avis",
+        "batman-route-sync": "batman-route-sync",
         "colmena": "colmena",
         "disko": "disko",
         "fastd-server-side-ratelimit": "fastd-server-side-ratelimit",
