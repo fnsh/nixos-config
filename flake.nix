@@ -52,7 +52,11 @@
     }@inputs:
     let
       system = "x86_64-linux";
-      lib = nixpkgs.lib;
+      lib = nixpkgs.lib.extend (
+        self: super: {
+          fnsh = import ./lib { lib = self; };
+        }
+      );
       pkgs = nixpkgs.legacyPackages.${system};
 
       mkGateway = id: {
@@ -80,7 +84,7 @@
         {
           meta = {
             nixpkgs = import nixpkgs { inherit system; };
-            specialArgs = { inherit inputs; };
+            specialArgs = { inherit inputs lib; };
           };
 
           defaults = {

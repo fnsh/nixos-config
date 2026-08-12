@@ -3,13 +3,15 @@ let
   meshCfg = config.services.meshGateway;
   domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
 
-  poolOffset = 1 + (meshCfg.gwId * 2);
-  gwAddr4 = "194.180.249.${toString poolOffset}/24";
-  gwAddr6 = "2a13:fcc0:ebbe:1:401:1000:110:${toString poolOffset}/112";
+  clientPoolAddr = lib.fnsh.clientPoolAddr meshCfg.gwId;
 
-  clientPoolAddr = "194.180.249.${toString (poolOffset + 1)}";
-
-  mkMac = vlan: "da:ff:${lib.toHexString vlan}:2${toString meshCfg.gwId}:00:01";
+  mkMac =
+    vlan:
+    lib.fnsh.internalMac {
+      inherit vlan;
+      typeId = 2;
+      nodeId = meshCfg.gwId;
+    };
 
   nftBatInterfaces = lib.concatMapStringsSep "," (domain: "\"${domain.batInterface}\"") domains;
 
@@ -101,8 +103,8 @@ in
           matchConfig.MACAddress = mkMac 110;
           networkConfig = {
             Address = [
-              gwAddr4
-              gwAddr6
+              (lib.fnsh.gwAddr6 meshCfg.gwId)
+              "${lib.fnsh.gwAddr4 meshCfg.gwId}/24"
               "${clientPoolAddr}/24"
             ];
             Gateway = [

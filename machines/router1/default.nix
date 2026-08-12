@@ -8,11 +8,15 @@ let
   mkMac =
     vlan:
     if vlan > 256 then
-      "da:00:0${lib.toHexString (builtins.div vlan 256)}:${
-        lib.toHexString (vlan - (256 * (builtins.div vlan 256)))
-      }:00:01"
+      lib.fnsh.externalMac {
+        inherit vlan;
+      }
     else
-      "da:ff:${lib.toHexString vlan}:11:00:01";
+      lib.fnsh.internalMac {
+        inherit vlan;
+        typeId = 1;
+        nodeId = 1;
+      };
 
   mkLinkConfig =
     { Name, MACAddress }:

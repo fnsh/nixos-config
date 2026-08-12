@@ -1,14 +1,12 @@
 { config, lib, ... }:
 let
   meshCfg = config.services.meshGateway;
-  poolOffset = 1 + (meshCfg.gwId * 2);
-  gwAddr4 = "194.180.249.${toString poolOffset}";
 in
 {
   services.bird = {
     enable = true;
     config = ''
-      router id ${gwAddr4};
+      router id ${lib.fnsh.gwAddr4 meshCfg.gwId};
 
       protocol device {
         scan time 10;

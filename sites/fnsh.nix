@@ -3,8 +3,6 @@ let
   firstDomain = 1;
   lastDomain = 20;
 
-  hexOctet = id: if id > 15 then lib.toHexString id else "0${lib.toHexString id}";
-
   mkDomain =
     id:
     lib.nameValuePair "dom${toString id}" {
@@ -17,11 +15,11 @@ let
       batInterface = "bat-dom${toString id}";
       subnet4 = "10.${toString (id * 10)}";
 
-      subnet6.public = "2a13:fcc0:2ed8:10${hexOctet id}";
-      subnet6.ula = "fd01:67c:2ed8:10${hexOctet id}";
+      subnet6.public = "2a13:fcc0:2ed8:10${lib.fnsh.paddedHexOctet id}";
+      subnet6.ula = "fd01:67c:2ed8:10${lib.fnsh.paddedHexOctet id}";
 
       nextnode = {
-        v6 = "fd01:67c:2ed8:10${hexOctet id}::1:1";
+        v6 = "fd01:67c:2ed8:10${lib.fnsh.paddedHexOctet id}::1:1";
         v4 = "10.${toString (id * 10)}.0.254";
       };
     };

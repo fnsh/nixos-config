@@ -5,8 +5,6 @@
   ...
 }:
 let
-  hexOctet = id: if id > 15 then lib.toHexString id else "0${lib.toHexString id}";
-
   meshCfg = config.services.meshGateway;
   domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
 
@@ -16,7 +14,7 @@ let
       netdevConfig = {
         Name = domain.batInterface;
         Kind = "batadv";
-        MACAddress = "da:ff:00:00:0${toString meshCfg.gwId}:${hexOctet domain.id}";
+        MACAddress = "da:ff:00:00:0${toString meshCfg.gwId}:${lib.fnsh.paddedHexOctet domain.id}";
       };
       batmanAdvancedConfig = {
         GatewayMode = "server";
