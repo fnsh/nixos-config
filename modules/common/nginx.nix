@@ -4,7 +4,6 @@
   security.acme.defaults.email = "acme@as62028.de";
 
   services.nginx = {
-    enable = true;
     enableReload = true;
     recommendedOptimisation = true;
     recommendedProxySettings = true;

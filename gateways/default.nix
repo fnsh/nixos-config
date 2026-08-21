@@ -21,6 +21,7 @@
       fastd
     ];
 
+    services.nginx.enable = true;
     services.meshGateway.peersDir = "/var/lib/fastd-keys/fastd-keys-master";
 
     services.impermanence.persist = [
