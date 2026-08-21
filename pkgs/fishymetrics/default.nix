@@ -6,13 +6,13 @@
 }:
 buildGoModule (finalAttrs: {
   pname = "fishymetrics";
-  version = "0.18.2-unstable_13.06.2026";
+  version = "0.19.2";
 
   src = fetchFromGitHub {
     owner = "comcast";
     repo = "fishymetrics";
-    rev = "a7e56f4b154a950aebbc500f0f9749d4fb6eddc0";
-    hash = "sha256-9Xf7majj+V1blJAf6Ef01VznuFg+IaqR59jVEP6nb2Q=";
+    rev = "d93d40189cb5ee197f988a8caee6cf95f3a8810e";
+    hash = "sha256-oUQxrzUxZNQXqzITLXLtWa4Lsyog0rd3c9Z9Z2okF5c=";
   };
 
   patches = [
@@ -23,6 +23,7 @@ buildGoModule (finalAttrs: {
   checkFlags = [ "-skip=Test_Vault_Auth" ]; # Skip test that requires docker
 
   meta = {
+    mainProgram = "fishymetrics";
     description = "Redfish API Prometheus Exporter for monitoring large scale server deployments";
     homepage = "https://github.com/comcast/fishymetrics";
     license = lib.licenses.asl20;
