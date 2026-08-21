@@ -69,15 +69,23 @@ in
       networks = (lib.listToAttrs (map mkDomainNetwork domains)) // {
         "25-anycast" = {
           matchConfig.Name = "anycast";
-          address = [
-            "194.180.249.32/29"
-            "2a13:fcc0:2ed9:ffff::32/64"
-          ];
+          networkConfig = {
+            IPv6AcceptRA = false;
+            DHCP = false;
+            LinkLocalAddressing = false;
+            Address = [
+              "194.180.249.32/29"
+              "2a13:fcc0:2ed9:ffff::32/64"
+            ];
+          };
         };
 
         "10-mgmt" = {
           matchConfig.MACAddress = mkMac 210;
           networkConfig = {
+            IPv6AcceptRA = false;
+            DHCP = false;
+
             Address =
               let
                 hostPart = 20 + meshCfg.gwId;
@@ -102,6 +110,9 @@ in
         "10-frontend" = {
           matchConfig.MACAddress = mkMac 110;
           networkConfig = {
+            IPv6AcceptRA = false;
+            DHCP = false;
+
             Address = [
               (lib.fnsh.gwAddr6 meshCfg.gwId)
               "${lib.fnsh.gwAddr4 meshCfg.gwId}/24"

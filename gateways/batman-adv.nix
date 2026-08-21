@@ -34,7 +34,9 @@ let
           # Required for Server Side Rate Limiting
           "fe80::f421:d:1/64"
         ];
-        # LinkLocalAddressing = false;
+        LinkLocalAddressing = false;
+        IPv6AcceptRA = false;
+        DHCP = false;
       };
     };
 in
