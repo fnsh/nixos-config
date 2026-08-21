@@ -3,7 +3,16 @@
   services.openssh = {
     enable = true;
     enableRecommendedAlgorithms = true;
-    settings.PermitRootLogin = "prohibit-password";
+    authorizedKeysInHomedir = false;
+
+    settings = {
+      PermitRootLogin = "prohibit-password";
+      PasswordAuthentication = false;
+      KbdInteractiveAuthentication = false;
+      UsePAM = false;
+      PrintMotd = true;
+    };
+
     openFirewall = true;
   };
 
