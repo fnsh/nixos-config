@@ -21,6 +21,7 @@ buildGoModule (finalAttrs: {
   vendorHash = "sha256-TcmkPBHxpmTgXNW8gPkzMpjPGCQu/HrZqAu9jDpPEjo=";
 
   meta = {
+    mainProgram = "yanic";
     description = "Yet another node info collector - for respondd to be used with meshviewer to Grafana";
     homepage = "https://codeberg.org/FreifunkBremen/yanic";
     license = lib.licenses.agpl3Plus;
