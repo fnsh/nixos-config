@@ -1,4 +1,4 @@
-{ lib, ... }:
+{ lib, config, ... }:
 {
   imports = [
     ../../modules/yanic.nix
@@ -6,10 +6,7 @@
 
   networking.firewall.extraInputRules =
     let
-      poolOffset = gwId: 1 + (gwId * 2);
-      mkGwAddr = gwId: "2a13:fcc0:ebbe:1:401:1000:110:${toString (poolOffset gwId)}";
-
-      gwAddrs = lib.concatMapStringsSep "," mkGwAddr (lib.range 1 8);
+      gwAddrs = lib.concatMapStringsSep "," lib.fnsh.gwAddr6 (lib.range 1 8);
     in
     ''
       iifname "enp1s0" ip6 saddr { ${gwAddrs} } tcp dport 11001 accept

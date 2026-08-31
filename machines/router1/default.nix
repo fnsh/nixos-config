@@ -19,11 +19,11 @@ let
       };
 
   mkLinkConfig =
-    { Name, MACAddress }:
+    { name, vlan }:
     {
-      matchConfig.MACAddress = MACAddress;
+      matchConfig.MACAddress = mkMac vlan;
       linkConfig = {
-        Name = Name;
+        Name = name;
         GenericSegmentationOffload = false;
         LargeReceiveOffload = false;
         GenericReceiveOffload = false;
@@ -57,23 +57,23 @@ in
     };
     links = {
       "10-mgmt" = mkLinkConfig {
-        Name = "mgmt";
-        MACAddress = mkMac 210;
+        name = "mgmt";
+        vlan = 210;
       };
 
       "20-frontend" = mkLinkConfig {
-        Name = "frontend";
-        MACAddress = mkMac 110;
+        name = "frontend";
+        vlan = 110;
       };
 
       "30-configo-port" = mkLinkConfig {
-        Name = "configo-port";
-        MACAddress = mkMac 21;
+        name = "configo-port";
+        vlan = 21;
       };
 
       "300-neanderfunk" = mkLinkConfig {
-        Name = "neanderfunk";
-        MACAddress = mkMac 300;
+        name = "neanderfunk";
+        vlan = 300;
       };
     };
 

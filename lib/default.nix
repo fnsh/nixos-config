@@ -36,5 +36,5 @@ in
 
   gwAddr4 = gwId: "194.180.249.${toString (poolOffset gwId)}";
   clientPoolAddr = gwId: "194.180.249.${toString ((poolOffset gwId) + 1)}";
-  gwAddr6 = gwId: "2a13:fcc0:ebbe:1:401:1000:110:${toString (poolOffset gwId)}/112";
+  gwAddr6 = gwId: "2a13:fcc0:ebbe:1:401:1000:110:${toString (poolOffset gwId)}";
 }

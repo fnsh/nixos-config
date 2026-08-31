@@ -114,7 +114,7 @@ in
             DHCP = false;
 
             Address = [
-              (lib.fnsh.gwAddr6 meshCfg.gwId)
+              "${lib.fnsh.gwAddr6 meshCfg.gwId}/112"
               "${lib.fnsh.gwAddr4 meshCfg.gwId}/24"
               "${clientPoolAddr}/24"
             ];
