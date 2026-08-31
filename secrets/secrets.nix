@@ -49,6 +49,7 @@ in
   "fastd_key_gw7.age".publicKeys = users ++ [ gw7 ];
   "fastd_key_gw8.age".publicKeys = users ++ [ gw8 ];
 
+  "fastd_key_monitoring.age".publicKeys = users ++ [ monitoring ];
   "bmc_pass.age".publicKeys = users ++ [ collector ];
   "once_username.age".publicKeys = users ++ [ collector ];
   "once_pass.age".publicKeys = users ++ [ collector ];

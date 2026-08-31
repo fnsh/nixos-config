@@ -4,6 +4,7 @@
     ../../modules/yanic.nix
   ];
 
+  networking.firewall.interfaces."bat-fffm-*".allowedUDPPorts = [ 10001 ];
   networking.firewall.extraInputRules =
     let
       gwAddrs = lib.concatMapStringsSep "," lib.fnsh.gwAddr6 (lib.range 1 8);
@@ -50,12 +51,18 @@
       ];
       respondd = {
         enable = true;
-        collect_interval = "1m"; # Doesn't do anything, but is required for yanic to start
+        collect_interval = "1m";
         tcp_listen = [ "[::]:11001" ];
+
+        interfaces = map (domain: {
+          ifname = domain.batInterface;
+          multicast_address = "ff05::2:1001";
+          port = 10001;
+        }) (builtins.attrValues config.fnsh.sites.fffm.domains);
       };
       nodes = {
         offline_after = "10m";
-        prune_after = "7d";
+        prune_after = "21d";
         save_interval = "5s";
         state_path = "/var/lib/yanic/state.json";
       };
