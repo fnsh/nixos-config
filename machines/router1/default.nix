@@ -71,6 +71,16 @@ in
         vlan = 21;
       };
 
+      "30-communityix-A" = mkLinkConfig {
+        name = "communityix-a";
+        vlan = 31;
+      };
+
+      "30-communityix-B" = mkLinkConfig {
+        name = "communityix-b";
+        vlan = 32;
+      };
+
       "300-neanderfunk" = mkLinkConfig {
         name = "neanderfunk";
         vlan = 300;
@@ -118,6 +128,18 @@ in
         };
       };
 
+      "30-communityix-slaves" = {
+        matchConfig.Name = "communityix-*";
+
+        networkConfig = {
+          LinkLocalAddressing = false;
+          IPv6AcceptRA = false;
+          DHCP = false;
+
+          Bond = "cix-bond";
+        };
+      };
+
       "31-configo-peer" = {
         matchConfig.MACAddress = mkMac 26;
 
@@ -138,6 +160,30 @@ in
             "81.27.69.85/31"
             "2a11:4140:9002::31/127"
           ];
+          VRF = "vrf-as62028";
+        };
+      };
+
+      "30-communityix-port" = {
+        matchConfig.Name = "cix-bond";
+
+        networkConfig = {
+          LinkLocalAddressing = false;
+          DHCP = false;
+          IPv6AcceptRA = false;
+          VLAN = [
+            "cix-peer"
+          ];
+        };
+      };
+
+      "31-communityix-peer" = {
+        matchConfig.MACAddress = mkMac 200;
+
+        networkConfig = {
+          DHCP = false;
+          IPv6AcceptRA = true;
+          IPv6SendRA = false;
           VRF = "vrf-as62028";
         };
       };
@@ -167,6 +213,19 @@ in
     };
 
     netdevs = {
+      "31-communityix-bond" = {
+        netdevConfig = {
+          Name = "cix-bond";
+          Kind = "bond";
+          # MACAddress = mkMac 200;
+        };
+        bondConfig = {
+          Mode = "802.3ad";
+          TransmitHashPolicy = "layer2+3";
+          LACPTransmitRate = "fast";
+        };
+      };
+
       "31-configo-peer" = {
         netdevConfig = {
           Name = "configo-peer";
@@ -185,6 +244,16 @@ in
         };
         vlanConfig = {
           Id = 475;
+        };
+      };
+      "32-communityix-peer" = {
+        netdevConfig = {
+          Name = "cix-peer";
+          Kind = "vlan";
+          MACAddress = mkMac 200;
+        };
+        vlanConfig = {
+          Id = 2000;
         };
       };
       "51-vrf-as62028" = {
