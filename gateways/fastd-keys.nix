@@ -31,32 +31,31 @@ in
     wantedBy = [ "multi-user.target" ];
 
     path = [
-      pkgs.ouch
-      pkgs.curl
+      pkgs.git
       pkgs.systemdMinimal
     ];
     script = ''
       set -euf
 
-      cd "$STATE_DIRECTORY"
+      target_dir="$STATE_DIRECTORY"
+      target_repo="https://github.com/fnsh/fastd-keys.git"
 
-      old_etag=$(cat ./etag || echo)
+      cd "$target_dir"
 
-      echo "Updating fastd keys"
-      curl \
-        --etag-compare ./etag \
-        --etag-save ./etag \
-        -o ./keys.tar.gz \
-        https://git.darmstadt.ccc.de/ffda/fastd-keys/-/archive/master/fastd-keys-master.tar.gz?ref_type=heads
+      old_hash=$(git rev-parse HEAD || echo)
 
-      new_etag=$(cat ./etag)
-      if [[ "$old_etag" == "$new_etag" ]]; then
+      if [ ! -d ".git" ]; then
+        git clone "$target_repo" .
+      else
+        echo "Updating fastd keys"
+        git pull --quiet
+      fi
+
+      new_hash=$(git rev-parse HEAD)
+      if [[ "$old_hash" == "$new_hash" ]]; then
         echo "No update found. Exiting"
         exit 0
       fi
-
-      ouch decompress --quiet ./keys.tar.gz --dir .
-      echo "Updated fastd keys"
 
       echo "Reloading fastd services"
       # Issue reload, but do not block because on boot it would lead to this

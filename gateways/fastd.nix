@@ -7,6 +7,7 @@
 let
   meshCfg = config.services.meshGateway;
   domains = builtins.attrValues config.fnsh.sites.fnsh.domains;
+  peersDir = "/var/lib/fastd-keys";
 
   mkFastdConf =
     domain:
@@ -25,7 +26,7 @@ let
       mtu 1312;
       include "${config.age.secrets."fastd_key_gw${toString meshCfg.gwId}".path}";
 
-      include peers from "${meshCfg.peersDir}";
+      include peers from "${peersDir}";
     '';
 
   mkFastdService =

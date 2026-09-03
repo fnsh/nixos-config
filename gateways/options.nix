@@ -22,12 +22,6 @@ in
       type = lib.types.int;
       description = "Gateway ID. Determines IPs and hostname";
     };
-
-    peersDir = lib.mkOption {
-      type = lib.types.nullOr lib.types.str;
-      default = null;
-      description = "Directory of fastd peer files";
-    };
   };
 
   config = {
