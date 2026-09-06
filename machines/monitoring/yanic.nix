@@ -61,9 +61,9 @@
         }) (builtins.attrValues config.fnsh.sites.fffm.domains);
       };
       nodes = {
-        offline_after = "10m";
-        prune_after = "21d";
-        save_interval = "5s";
+        offline_after = "5m";
+        prune_after = "60d";
+        save_interval = "30s";
         state_path = "/var/lib/yanic/state.json";
       };
     };
