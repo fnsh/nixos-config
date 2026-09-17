@@ -87,6 +87,22 @@
         "type": "github"
       }
     },
+    "device-pictures": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1788205293,
+        "narHash": "sha256-rytia0QonN7zkctOrWJnzBOkaHavsmS/WMxW8hAbTwc=",
+        "owner": "freifunk",
+        "repo": "device-pictures",
+        "rev": "171d756bd2b768ffbd3815577464b77eaf8952d4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "freifunk",
+        "repo": "device-pictures",
+        "type": "github"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": [
@@ -255,6 +271,7 @@
         "avis": "avis",
         "batman-route-sync": "batman-route-sync",
         "colmena": "colmena",
+        "device-pictures": "device-pictures",
         "disko": "disko",
         "fastd-server-side-ratelimit": "fastd-server-side-ratelimit",
         "meshviewer": "meshviewer",

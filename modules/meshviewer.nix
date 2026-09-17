@@ -15,8 +15,8 @@ let
       "/data/"
     ];
     deprecation_enabled = true;
-    deprecation_text = "Warnung: Dieser Knoten ist veraltet, und wird nicht mehr unterstützt. Es gibt auch keine Sicherheitsupdates mehr!<br><br>Mehr Infos im <a href=\"https://darmstadt.freifunk.net/news/2018/05/16/eol-devices.html\" target=\"_blank\" rel=\"noopener noreferrer\">Blogbeitrag</a>.<br><br>Wenn du der Eigentümer des Gerätes bist bitten wir dich das Gerät zu ersetzen um weiterhin am Netz teilnehmen zu können.";
-    devicePictures = "https://meshviewer.darmstadt.freifunk.net/pictures-svg/{MODEL_NORMALIZED}.svg";
+    deprecation_text = "Warnung: Dieser Knoten ist veraltet, und wird nicht mehr unterstützt. <br>Mehr Infos: <a href=\"https://openwrt.org/supported_devices/432_warning\" target=\"_blank\" rel=\"noopener noreferrer\">https://openwrt.org/supported_devices/432_warning</a>.";
+    devicePictures = "https://assets.as62028.de/device-pictures/{MODEL_NORMALIZED}.svg";
     devicePicturesLicense = "CC-BY-NC-SA 4.0";
     devicePicturesSource = "<a href='https://github.com/freifunk/device-pictures'>https://github.com/freifunk/device-pictures</a>";
     domainNames = [

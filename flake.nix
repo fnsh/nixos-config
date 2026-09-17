@@ -9,6 +9,10 @@
       url = "github:freifunk/meshviewer";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+    device-pictures = {
+      url = "github:freifunk/device-pictures";
+      flake = false;
+    };
 
     colmena = {
       url = "github:zhaofengli/colmena";
