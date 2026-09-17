@@ -7,16 +7,16 @@ let
       };
       aliases = lib.mkOption {
         type = lib.types.listOf (
-          lib.types.attrsOf (
-            lib.types.submodule {
+          lib.types.submodule {
+            options = {
               code = lib.mkOption {
                 type = lib.types.singleLineStr;
               };
               human_name = lib.mkOption {
                 type = lib.types.singleLineStr;
               };
-            }
-          )
+            };
+          }
         );
       };
       id = lib.mkOption {
