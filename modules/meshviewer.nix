@@ -541,8 +541,27 @@ in
         enableACME = true;
 
         locations."/".root = meshviewerPkg;
-        locations."= /data/meshviewer.json".alias = "/srv/yanic/meshviewer.json";
-        locations."= /config.json".alias = pkgs.writeText "config.json" (builtins.toJSON meshviewerConfig);
+
+        locations."/assets/" = {
+          alias = "${meshviewerPkg}/assets/";
+          extraConfig = ''
+            add_header 'Cache-Control' 'public, max-age=604800, immutable' always;
+          '';
+        };
+
+        locations."= /data/meshviewer.json" = {
+          alias = "/srv/yanic/meshviewer.json";
+          extraConfig = ''
+            add_header 'Cache-Control' 'no-store' always;
+          '';
+        };
+
+        locations."= /config.json" = {
+          alias = pkgs.writeText "config.json" (builtins.toJSON meshviewerConfig);
+          extraConfig = ''
+            add_header 'Cache-Control' 'max-age=86400, stale-while-revalidate=1123200' always;
+          '';
+        };
       };
     };
   };
