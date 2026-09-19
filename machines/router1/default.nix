@@ -76,11 +76,6 @@ in
         vlan = 31;
       };
 
-      "30-communityix-B" = mkLinkConfig {
-        name = "communityix-b";
-        vlan = 32;
-      };
-
       "300-neanderfunk" = mkLinkConfig {
         name = "neanderfunk";
         vlan = 300;
@@ -128,18 +123,6 @@ in
         };
       };
 
-      "30-communityix-slaves" = {
-        matchConfig.Name = "communityix-*";
-
-        networkConfig = {
-          LinkLocalAddressing = false;
-          IPv6AcceptRA = false;
-          DHCP = false;
-
-          Bond = "cix-bond";
-        };
-      };
-
       "31-configo-peer" = {
         matchConfig.MACAddress = mkMac 26;
 
@@ -165,7 +148,7 @@ in
       };
 
       "30-communityix-port" = {
-        matchConfig.Name = "cix-bond";
+        matchConfig.Name = "communityix-a";
 
         networkConfig = {
           LinkLocalAddressing = false;
@@ -182,9 +165,13 @@ in
 
         networkConfig = {
           DHCP = false;
-          IPv6AcceptRA = true;
+          IPv6AcceptRA = false;
           IPv6SendRA = false;
           VRF = "vrf-as62028";
+          Address = [
+            "185.1.74.74/25"
+            "2001:7f8:a5::6:2028:1/64"
+          ];
         };
       };
 
@@ -213,19 +200,6 @@ in
     };
 
     netdevs = {
-      "31-communityix-bond" = {
-        netdevConfig = {
-          Name = "cix-bond";
-          Kind = "bond";
-          # MACAddress = mkMac 200;
-        };
-        bondConfig = {
-          Mode = "802.3ad";
-          TransmitHashPolicy = "layer2+3";
-          LACPTransmitRate = "fast";
-        };
-      };
-
       "31-configo-peer" = {
         netdevConfig = {
           Name = "configo-peer";
