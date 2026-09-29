@@ -2,21 +2,31 @@
   description = "Freifunk Darmstadt gateway config";
 
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-26.05";
-    nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    fastd-server-side-ratelimit.url = "github:fnsh/fastd-server-side-ratelimit";
-    meshviewer = {
-      url = "github:freifunk/meshviewer";
+    nixpkgs.url = "https://channels.nixos.org/nixos-26.05/nixexprs.tar.xz";
+    nixpkgs-unstable.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz";
+    fastd-server-side-ratelimit = {
+      url = "github:fnsh/fastd-server-side-ratelimit";
       inputs.nixpkgs.follows = "nixpkgs";
+    };
+    meshviewer = {
+      url = "github:freifunk/meshviewer?ref=v13.2.0";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     device-pictures = {
       url = "github:freifunk/device-pictures";
       flake = false;
     };
-
+    systems.url = "github:nix-systems/triplet";
+    nix-github-actions = {
+      url = "github:nix-community/nix-github-actions";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+    };
     colmena = {
       url = "github:zhaofengli/colmena";
-      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs-unstable";
+      inputs.stable.follows = "nixpkgs";
+      inputs.systems.follows = "systems";
+      inputs.nix-github-actions.follows = "nix-github-actions";
     };
 
     disko = {
@@ -32,9 +42,6 @@
     agenix = {
       url = "github:ryantm/agenix";
       inputs.nixpkgs.follows = "nixpkgs";
-      # optionally choose not to download darwin deps (saves some resources on Linux)
-      inputs.darwin.follows = "";
-      inputs.home-manager.follows = "";
     };
 
     batman-route-sync = {
