@@ -9,14 +9,14 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     meshviewer = {
-      url = "github:freifunk/meshviewer?ref=v13.2.0";
+      url = "github:freifunk/meshviewer";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
     };
     device-pictures = {
       url = "github:freifunk/device-pictures";
       flake = false;
     };
-    systems.url = "github:nix-systems/triplet";
+    systems.url = "github:nix-systems/default";
     nix-github-actions = {
       url = "github:nix-community/nix-github-actions";
       inputs.nixpkgs.follows = "nixpkgs-unstable";
