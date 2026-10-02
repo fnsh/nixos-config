@@ -1,7 +1,7 @@
 { pkgs, lib, ... }:
 {
   boot.kernelPackages = pkgs.linuxPackagesFor (
-    pkgs.linux_7_1.override {
+    pkgs.linux_7_2.override {
       # Somehow the kernelPatches aren't applied in the kernel config builder
       ignoreConfigErrors = true;
     }
