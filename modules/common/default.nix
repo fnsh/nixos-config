@@ -45,6 +45,9 @@
     git
     iproute2
     tcpdump
+    htop
+    btop
+    tmux
   ];
 
   system.disableInstallerTools = true;
