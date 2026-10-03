@@ -48,6 +48,10 @@
     htop
     btop
     tmux
+    nushell
+    helix
+    vim
+    jq
   ];
 
   system.disableInstallerTools = true;

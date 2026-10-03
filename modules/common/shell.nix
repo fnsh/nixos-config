@@ -22,5 +22,6 @@
      - bash
      - zsh
      - fish
+     - nu
   '';
 }
