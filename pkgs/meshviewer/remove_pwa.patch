@@ -1,14 +1,37 @@
-From 253ecaf95d32a9b0fefea103f7384174da86aa76 Mon Sep 17 00:00:00 2001
+From c28a8f18d83ca3d56a71020892dcd9ba969e8b09 Mon Sep 17 00:00:00 2001
 From: liv <liv+git@spacegli.de>
-Date: Thu, 18 Jun 2026 22:31:06 +0200
-Subject: [PATCH] chore: remove pwa
+Date: Sat, 3 Oct 2026 16:06:36 +0200
+Subject: [PATCH] pwa: remove
 
 ---
- vite.config.js | 36 ------------------------------------
- 1 file changed, 36 deletions(-)
+ lib/index.ts   |  5 -----
+ vite-env.d.ts  |  1 -
+ vite.config.js | 38 --------------------------------------
+ 3 files changed, 44 deletions(-)
 
+diff --git a/lib/index.ts b/lib/index.ts
+index 3da3048..be14074 100644
+--- a/lib/index.ts
++++ b/lib/index.ts
+@@ -1,9 +1,4 @@
+ import "../scss/main.scss";
+-import { registerSW } from "virtual:pwa-register";
+ import { load } from "./load.js";
+ 
+-// Pulls in the autoUpdate register template; without this import only a bare
+-// register() is emitted and updates arrive one reload late.
+-registerSW({ immediate: true });
+-
+ load();
+diff --git a/vite-env.d.ts b/vite-env.d.ts
+index 64251fb..11f02fe 100644
+--- a/vite-env.d.ts
++++ b/vite-env.d.ts
+@@ -1,2 +1 @@
+ /// <reference types="vite/client" />
+-/// <reference types="vite-plugin-pwa/client" />
 diff --git a/vite.config.js b/vite.config.js
-index 03fa09a..d20e152 100644
+index d01e72a..2637a8e 100644
 --- a/vite.config.js
 +++ b/vite.config.js
 @@ -2,7 +2,6 @@ import { readFileSync } from "fs";
@@ -16,51 +39,53 @@ index 03fa09a..d20e152 100644
  import { defineConfig } from "vite";
  import { checker } from "vite-plugin-checker";
 -import { VitePWA } from "vite-plugin-pwa";
- import pkg from "./package.json";
+ import pkg from "./package.json" with { type: "json" };
  import { resolveRelativeFixtureTimes } from "./scripts/fixture-times.mjs";
  
-@@ -86,41 +85,6 @@ export default defineConfig(({ command, mode }) => ({
+@@ -86,43 +85,6 @@ export default defineConfig(({ command, mode }) => ({
    },
    plugins: [
      command === "serve" && mode === "fixtures" ? devFixturesPlugin() : null,
--    process.env.VITE_PREVIEW === "1"
--      ? null
--      : new VitePWA({
--          workbox: {
--            globPatterns: ["**/*.{js,css,html,ico,png,svg,ttf,woff,woff2}"],
--            navigateFallbackDenylist: [new RegExp(".*\.json")],
+-    VitePWA({
+-      registerType: "autoUpdate",
+-      workbox: {
+-        globPatterns: ["**/*.{js,css,html,ico,png,svg,ttf,woff,woff2}"],
+-        // Matched against pathname + search: keep the index.html fallback off
+-        // real files, otherwise /sw.js is served as the app itself.
+-        navigateFallbackDenylist: [/\.[a-z0-9]+(\?|$)/i],
+-        cleanupOutdatedCaches: true,
+-      },
+-      manifest: {
+-        name: "Meshviewer",
+-        short_name: "Meshviewer",
+-        description:
+-          "Meshviewer is an online visualization app to represent nodes and links on a map for Freifunk open mesh network.",
+-        theme_color: "#ffffff",
+-        icons: [
+-          {
+-            src: "pwa-64x64.png",
+-            sizes: "64x64",
+-            type: "image/png",
 -          },
--          manifest: {
--            name: "Meshviewer",
--            short_name: "Meshviewer",
--            description:
--              "Meshviewer is an online visualization app to represent nodes and links on a map for Freifunk open mesh network.",
--            theme_color: "#ffffff",
--            icons: [
--              {
--                src: "pwa-64x64.png",
--                sizes: "64x64",
--                type: "image/png",
--              },
--              {
--                src: "pwa-192x192.png",
--                sizes: "192x192",
--                type: "image/png",
--              },
--              {
--                src: "pwa-512x512.png",
--                sizes: "512x512",
--                type: "image/png",
--              },
--            ],
+-          {
+-            src: "pwa-192x192.png",
+-            sizes: "192x192",
+-            type: "image/png",
 -          },
--          devOptions: {
--            enabled: true,
+-          {
+-            src: "pwa-512x512.png",
+-            sizes: "512x512",
+-            type: "image/png",
 -          },
--        }),
+-        ],
+-      },
+-      devOptions: {
+-        enabled: false,
+-      },
+-    }),
      checker({
        // Run TypeScript checks
        typescript: true,
 -- 
-2.54.0
+2.55.0
 
