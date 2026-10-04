@@ -61,6 +61,16 @@
       "nix-command"
       "flakes"
     ];
+    substituters = [
+      "https://nix-community.cachix.org"
+      "https://colmena.cachix.org"
+      "https://fnsh.cachix.org"
+    ];
+    trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "colmena.cachix.org-1:7BzpDnjjH8ki2CT3f6GdOk7QAzPOl+1t3LvTLXqYcSg="
+      "fnsh.cachix.org-1:q4w7VKU3C2TUR9nmPvw8NZWki38JeY7W4njYPo+Xzpw="
+    ];
   };
   nix.gc = {
     automatic = true;

@@ -49,7 +49,21 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
   };
-
+  nixConfig = {
+    extra-substituters = [
+      "https://cache.nixos.org"
+      "https://nix-community.cachix.org"
+      "https://pre-commit-hooks.cachix.org"
+      "https://colmena.cachix.org"
+      "https://fnsh.cachix.org"
+    ];
+    extra-trusted-public-keys = [
+      "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs="
+      "pre-commit-hooks.cachix.org-1:Pkk3Panw5AW24TOv6kz3PvLhlH8puAsJTBbOPmBo7Rc="
+      "colmena.cachix.org-1:7BzpDnjjH8ki2CT3f6GdOk7QAzPOl+1t3LvTLXqYcSg="
+      "fnsh.cachix.org-1:q4w7VKU3C2TUR9nmPvw8NZWki38JeY7W4njYPo+Xzpw="
+    ];
+  };
   outputs =
     {
       self,
@@ -193,6 +207,7 @@
           colmena.packages.${system}.colmena
           agenix.packages.${system}.default
           pkgs.nixos-anywhere
+          pkgs.cachix
         ];
       };
 
