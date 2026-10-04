@@ -7,7 +7,7 @@
 }:
 let
   meshviewerPkg = pkgs.callPackage ../pkgs/meshviewer {
-    meshviewer = inputs.meshviewer.packages.${pkgs.system}.default;
+    meshviewer = inputs.meshviewer.packages.${pkgs.stdenv.hostPlatform.system}.default;
   };
 
   meshviewerConfig = {

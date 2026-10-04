@@ -13,10 +13,9 @@ let
     };
 
 in
-  {
-    fnsh.sites.fffm = {
-      name = "Freie Netze Suedhessen (FFFM exit)";
-      domains = lib.listToAttrs (map mkDomain (lib.range firstDomain lastDomain));
-    };
-  }
-
+{
+  fnsh.sites.fffm = {
+    name = "Freie Netze Suedhessen (FFFM exit)";
+    domains = lib.listToAttrs (map mkDomain (lib.range firstDomain lastDomain));
+  };
+}
