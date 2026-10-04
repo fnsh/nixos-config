@@ -52,6 +52,7 @@
 
   outputs =
     {
+      self,
       nixpkgs,
       colmena,
       disko,
@@ -91,10 +92,14 @@
 
     in
     {
-      colmenaHive = colmena.lib.makeHive (
+      colmenaHive = colmena.lib.makeHive self.outputs.colmena;
+
+      colmena = (
         {
           meta = {
-            nixpkgs = import nixpkgs { inherit system; };
+            nixpkgs = import inputs.nixpkgs {
+              system = "x86_64-linux";
+            };
             specialArgs = { inherit inputs lib; };
           };
 
@@ -146,6 +151,8 @@
           map (gwId: lib.nameValuePair "gw${toString gwId}" (mkGateway gwId)) (lib.range 1 8)
         ))
       );
+
+      nixosConfigurations = (inputs.colmena.lib.makeHive self.outputs.colmena).nodes;
 
       packages.${system}.installer =
         (lib.nixosSystem {
