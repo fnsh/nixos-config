@@ -3,7 +3,8 @@
 
   inputs = {
     nixpkgs.url = "https://channels.nixos.org/nixos-26.05/nixexprs.tar.xz";
-    nixpkgs-unstable.url = "github:nixos/nixpkgs?rev=d80fa9121f722c2ab574cae026fd4827108cda50";
+    nixpkgs-unstable.url = "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz";
+    nixpkgs-martin.url = "github:nixos/nixpkgs?rev=d80fa9121f722c2ab574cae026fd4827108cda50";
     fastd-server-side-ratelimit = {
       url = "github:fnsh/fastd-server-side-ratelimit";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -25,7 +25,7 @@ in
 
       serviceConfig = {
         ExecStart = toString [
-          (lib.getExe (inputs.nixpkgs-unstable.legacyPackages.${pkgs.stdenv.hostPlatform.system}.martin))
+          (lib.getExe (inputs.nixpkgs-martin.legacyPackages.${pkgs.stdenv.hostPlatform.system}.martin))
           "--config"
           (yamlFormat.generate "martin-config.yaml" cfg.settings)
         ];
