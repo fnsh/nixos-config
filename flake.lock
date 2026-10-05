@@ -189,6 +189,7 @@
     "nixpkgs": {
       "locked": {
 <<<<<<< HEAD
+<<<<<<< HEAD
         "lastModified": 1793633738,
         "narHash": "sha256-dKEjuquCf1NEYiTZZr6xrvTrkhAm5Q94JuEwLBzycEs=",
         "rev": "7dcdd87373d72e7a2173e4db02e20d3d7f495cfd",
@@ -201,6 +202,13 @@
         "type": "tarball",
         "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.11150.825e2028c29b/nixexprs.tar.xz?lastModified=1791031588&rev=825e2028c29b702a4a5f085f08095d12099784f2"
 >>>>>>> ac07307 (updated flake.lock)
+=======
+        "lastModified": 1791143449,
+        "narHash": "sha256-XvTu5S/TUsH4Jn9WRXSJfSxD7kHN4OzM/y+sKEzN8rU=",
+        "rev": "0d9e9b832d03ac387417e16ce1febf73b2e631e1",
+        "type": "tarball",
+        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.11216.0d9e9b832d03/nixexprs.tar.xz?lastModified=1791143449&rev=0d9e9b832d03ac387417e16ce1febf73b2e631e1"
+>>>>>>> 72822f0 (updated flake.lock)
       },
       "original": {
         "type": "tarball",
