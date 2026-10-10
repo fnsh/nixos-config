@@ -136,6 +136,14 @@
             ];
           };
 
+          "swooter1" = {
+            deployment.targetHost = "swooter1";
+            imports = [
+              ./modules/sn2010.nix
+              ./machines/swooter1
+            ];
+          };
+
           "nat64" = {
             deployment.targetHost = "nat64.vlan210.cfg.ix.fra.infra.as62028.de";
             deployment.targetUser = "root";
