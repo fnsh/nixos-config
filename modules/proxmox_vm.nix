@@ -4,6 +4,30 @@
     ./impermanence.nix
   ];
 
+  services.qemuGuest.enable = true;
+
+  # "Hardware" options
+  boot.initrd.availableKernelModules = [
+    "uhci_hcd"
+    "ehci_pci"
+    "ahci"
+    "sd_mod"
+    "sr_mod"
+    "virtio_net"
+    "virtio_pci"
+    "virtio_mmio"
+    "virtio_blk"
+    "virtio_scsi"
+    "9p"
+    "9pnet_virtio"
+    "virtiofs"
+  ];
+  boot.initrd.kernelModules = [
+    "virtio_balloon"
+    "virtio_console"
+    "virtio_rng"
+  ];
+
   networking.firewall.interfaces."mgmt".allowedTCPPorts = [ 22 ];
 
   # No logging to disk

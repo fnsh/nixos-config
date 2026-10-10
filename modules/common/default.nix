@@ -10,33 +10,9 @@
     ./nginx.nix
   ];
 
-  # "Hardware" options
-  services.qemuGuest.enable = true;
-
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
-
   boot.initrd.systemd.enable = true;
-  boot.initrd.availableKernelModules = [
-    "uhci_hcd"
-    "ehci_pci"
-    "ahci"
-    "sd_mod"
-    "sr_mod"
-    "virtio_net"
-    "virtio_pci"
-    "virtio_mmio"
-    "virtio_blk"
-    "virtio_scsi"
-    "9p"
-    "9pnet_virtio"
-    "virtiofs"
-  ];
-  boot.initrd.kernelModules = [
-    "virtio_balloon"
-    "virtio_console"
-    "virtio_rng"
-  ];
 
   # Default system config
   time.timeZone = "Europe/Berlin";
