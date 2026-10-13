@@ -143,6 +143,13 @@
               ./machines/swooter1
             ];
           };
+          "swooter2" = {
+            deployment.targetHost = "swooter2";
+            imports = [
+              ./modules/sn2010.nix
+              ./machines/swooter2
+            ];
+          };
 
           "nat64" = {
             deployment.targetHost = "nat64.vlan210.cfg.ix.fra.infra.as62028.de";
