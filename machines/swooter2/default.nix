@@ -4,6 +4,11 @@
 
   system.stateVersion = "26.05";
 
+  # TODO: remove me
+  users.users.root.openssh.authorizedKeys.keys = [
+    "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICuvHo+2SyCxuMprabCUggAglsqlrKFr2mH+08rhBA24 aron-floss@srv156 (no passphrase)"
+  ];
+
   boot.initrd.availableKernelModules = [
     "ehci_pci"
     "ahci"
