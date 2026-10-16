@@ -1,8 +1,5 @@
 { lib, ... }:
-let
-  poolOffset = gwId: 1 + (gwId * 2);
-in
-{
+rec {
   paddedHexOctet =
     number: if number > 15 then lib.toHexString number else "0${lib.toHexString number}";
 
@@ -34,7 +31,8 @@ in
       lib.toHexString (vlan - (256 * (builtins.div vlan 256)))
     }:${lastTwoOctets}";
 
-  gwAddr4 = gwId: "194.180.249.${toString (poolOffset gwId)}";
-  clientPoolAddr = gwId: "194.180.249.${toString ((poolOffset gwId) + 1)}";
-  gwAddr6 = gwId: "2a13:fcc0:ebbe:1:401:1000:110:${toString (poolOffset gwId)}";
+  gwPoolOffset = gwId: 1 + (gwId * 2);
+  gwAddr4 = gwId: "194.180.249.${toString (gwPoolOffset gwId)}";
+  clientPoolAddr = gwId: "194.180.249.${toString ((gwPoolOffset gwId) + 1)}";
+  gwAddr6 = gwId: "2a13:fcc0:ebbe:1:401:1000:110:${toString (gwPoolOffset gwId)}";
 }
