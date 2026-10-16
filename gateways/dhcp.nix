@@ -11,7 +11,7 @@ let
       # This is the same as the last octet of the public v4 of the gateway
       netOffset = lib.fnsh.gwPoolOffset cfg.gwId;
 
-      subnetCidr = "${domain.subnet4}.0.0/20";
+      subnetCidr = "${domain.subnet4}.0.0/16";
       gatewayAddress = "${domain.subnet4}.0.${toString cfg.gwId}";
 
       # Since the netOffset increases by 2 for each gateway, they all get a /23
