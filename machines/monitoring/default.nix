@@ -2,6 +2,7 @@
 {
   imports = [
     ./avis.nix
+    ./beacons.nix
     ./disko.nix
     ./victoria.nix
     ./victoria-backup.nix
