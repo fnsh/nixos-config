@@ -22,6 +22,7 @@ in
         "-selfScrapeInterval=60s"
         "-inmemoryDataFlushInterval=60s"
         "-relabelConfig=${ingestRelabelConfig}"
+        "-memory.allowedBytes=2GiB"
       ];
     };
     systemd.mounts = [
