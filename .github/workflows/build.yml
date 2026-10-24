@@ -13,7 +13,6 @@ concurrency:
 
 jobs:
   targets:
-    needs: build-meta
     outputs:
       targets: ${{ steps.get-targets.outputs.targets }}
     runs-on: ubuntu-22.04
