@@ -10,8 +10,6 @@
     ./collector.nix
     ./ping.nix
     ./yanic.nix
-    ./fastd.nix
-    ./batman.nix
     ./meshviewer.nix
     ./tiles.nix
   ];

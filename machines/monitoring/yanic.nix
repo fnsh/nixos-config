@@ -1,15 +1,9 @@
-{
-  config,
-  lib,
-  pkgs,
-  ...
-}:
+{ lib, pkgs, ... }:
 {
   imports = [
     ../../modules/yanic.nix
   ];
 
-  networking.firewall.interfaces."bat-fffm-*".allowedUDPPorts = [ 10001 ];
   networking.firewall.extraInputRules =
     let
       gwAddrs = lib.concatMapStringsSep "," lib.fnsh.gwAddr6 (lib.range 1 8);
@@ -64,12 +58,6 @@
         enable = true;
         collect_interval = "1m";
         tcp_listen = [ "[::]:11001" ];
-
-        interfaces = map (domain: {
-          ifname = domain.batInterface;
-          multicast_address = "ff05::2:1001";
-          port = 10001;
-        }) (builtins.attrValues config.fnsh.sites.fffm.domains);
       };
       nodes = {
         offline_after = "5m";
