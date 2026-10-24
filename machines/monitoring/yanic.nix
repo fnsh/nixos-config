@@ -1,4 +1,9 @@
-{ lib, config, ... }:
+{
+  config,
+  lib,
+  pkgs,
+  ...
+}:
 {
   imports = [
     ../../modules/yanic.nix
@@ -29,6 +34,12 @@
   systemd.services.yanic = {
     after = [ "var-lib-private-yanic.mount" ];
     requires = [ "var-lib-private-yanic.mount" ];
+    preStart = lib.mkBefore ''
+      until ${lib.getExe pkgs.curl} -s -o /dev/null https://vm.monitoring.htz.nbg.infra.as62028.de/ping; do
+        sleep 1;
+      done
+    '';
+
   };
 
   services.yanic = {
