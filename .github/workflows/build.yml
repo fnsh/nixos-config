@@ -28,7 +28,7 @@ jobs:
           # If you chose API tokens for write access OR if you have a private cache
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - name: Get Targets
-        run: nix eval '.#hostList'
+        run: nix eval --accept-flake-config '.#hostList'
         id: get-targets
 
   build:
