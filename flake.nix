@@ -108,7 +108,9 @@
     in
     {
       colmenaHive = colmena.lib.makeHive self.outputs.colmena;
-      hostList = builtins.toJSON (builtins.attrNames self.outputs.nixosConfigurations);
+      hostList = {
+        targets = builtins.toJSON (builtins.attrNames self.outputs.nixosConfigurations);
+      };
 
       colmena = (
         {
