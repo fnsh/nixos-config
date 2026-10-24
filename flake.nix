@@ -172,11 +172,10 @@
         (lib.nixosSystem {
           inherit pkgs;
           modules = [
-            ./machines/common.nix
+            ./modules/common/default.nix
             (
               { modulesPath, ... }:
               {
-
                 imports = [
                   (modulesPath + "/installer/cd-dvd/installation-cd-minimal.nix")
                 ];
