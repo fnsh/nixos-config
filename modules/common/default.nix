@@ -52,6 +52,14 @@
     helix
     vim
     jq
+    ethtool
+    pciutils
+    curl
+    xh
+    hickory-dns
+    dig
+    netcat
+    trippy
   ];
 
   system.disableInstallerTools = true;
