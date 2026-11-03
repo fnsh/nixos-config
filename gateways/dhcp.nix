@@ -8,15 +8,12 @@ let
   mkKeaSubnet =
     domain:
     let
-      # This is the same as the last octet of the public v4 of the gateway
-      netOffset = lib.fnsh.gwPoolOffset cfg.gwId;
-
-      subnetCidr = "${domain.subnet4}.0.0/16";
+      subnetCidr = "${domain.subnet4}.0.0/20";
+      dhcpNet = "${domain.subnet4}.${toString cfg.gwId}";
       gatewayAddress = "${domain.subnet4}.0.${toString cfg.gwId}";
 
-      # Since the netOffset increases by 2 for each gateway, they all get a /23
-      dhcpStart = "${domain.subnet4}.${toString netOffset}.0";
-      dhcpEnd = "${domain.subnet4}.${toString (netOffset + 1)}.255";
+      dhcpStart = "${dhcpNet}.0";
+      dhcpEnd = "${dhcpNet}.255";
     in
     {
       id = domain.id;
