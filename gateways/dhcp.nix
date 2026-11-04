@@ -18,6 +18,7 @@ let
     {
       id = domain.id;
       subnet = subnetCidr;
+      allocator = "random";
       pools = [ { pool = "${dhcpStart} - ${dhcpEnd}"; } ];
       option-data = [
         {
