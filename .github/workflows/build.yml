@@ -28,7 +28,7 @@ jobs:
           # If you chose API tokens for write access OR if you have a private cache
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - name: Get Targets
-        run: echo "$(nix eval --accept-flake-config '.#hostList' | jq . )" >> "$GITHUB_OUTPUT"
+        run: nix eval --accept-flake-config '.#hostList' | jq -r . | jq -c .targets >> "$GITHUB_OUTPUT"
         id: get-targets
 
   build:
