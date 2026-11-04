@@ -14,9 +14,9 @@ concurrency:
 jobs:
   targets:
     outputs:
-      targets: ${{ steps.get-targets.outputs.targets }}
+      attrPaths: ${{ steps.get-targets.outputs.attrPaths }}
     runs-on: ubuntu-22.04
-    name: Get Gluon targets
+    name: Get outputs to build
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v25
@@ -28,8 +28,12 @@ jobs:
           # If you chose API tokens for write access OR if you have a private cache
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
       - name: Get Targets
-        run: nix eval --accept-flake-config '.#hostList' | jq -r . | jq -c .targets >> "$GITHUB_OUTPUT"
         id: get-targets
+        run: |
+          attrs=$(nix eval --accept-flake-config --json .#cacheOutputs)
+          echo 'Identified these output attrs:'
+          echo "$attrs" | jq .
+          echo "attrPaths=$attrs" >> "$GITHUB_OUTPUT"
 
   build:
     runs-on: ubuntu-latest
@@ -38,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        target: ${{ fromJSON(needs.targets.outputs.targets) }}
+        attrPath: ${{ fromJSON(needs.targets.outputs.attrPaths) }}
     steps:
     - uses: actions/checkout@v7
     - uses: cachix/install-nix-action@v25
@@ -49,5 +53,5 @@ jobs:
         name: fnsh
         # If you chose API tokens for write access OR if you have a private cache
         authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-    - run: nix build --accept-flake-config --print-out-paths '.#nixosConfigurations."${{ matrix.hostname }}".config.system.build.toplevel'
+    - run: nix build --accept-flake-config --print-out-paths '.#${{ matrix.attrPath }}'
 

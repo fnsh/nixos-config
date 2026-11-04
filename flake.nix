@@ -108,9 +108,14 @@
     in
     {
       colmenaHive = colmena.lib.makeHive self.outputs.colmena;
-      hostList = {
-        targets = builtins.toJSON (builtins.attrNames self.outputs.nixosConfigurations);
-      };
+      cacheOutputs =
+        (map (host: "nixosConfigurations.${host}.config.system.build.toplevel") (
+          builtins.attrNames self.outputs.nixosConfigurations
+        ))
+        ++ [
+          "devShells.${system}.default"
+          "packages.${system}.installer"
+        ];
 
       colmena = (
         {
