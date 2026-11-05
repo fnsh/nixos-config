@@ -8,12 +8,13 @@ let
   mkKeaSubnet =
     domain:
     let
-      subnetCidr = "${domain.subnet4}.0.0/20";
-      dhcpNet = "${domain.subnet4}.${toString cfg.gwId}";
+      subnetCidr = "${domain.subnet4}.0.0/16";
       gatewayAddress = "${domain.subnet4}.0.${toString cfg.gwId}";
 
-      dhcpStart = "${dhcpNet}.0";
-      dhcpEnd = "${dhcpNet}.255";
+      # 30 x /24s DHCP pool per GW / domain
+      dhcpStartOffset = 1 + (31 * (cfg.gwId - 1));
+      dhcpStart = "${domain.subnet4}.${toString dhcpStartOffset}.0";
+      dhcpEnd = "${domain.subnet4}.${toString (dhcpStartOffset + 31)}.255";
     in
     {
       id = domain.id;
@@ -27,7 +28,7 @@ let
         }
         {
           name = "domain-name-servers";
-          data = domain.nextnode.v4;
+          data = "194.180.249.32";
         }
         {
           name = "domain-name";

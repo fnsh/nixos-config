@@ -27,7 +27,7 @@ let
         "${domain.subnet6.public}::${toString meshCfg.gwId}/64"
         "${domain.subnet6.ula}::${toString meshCfg.gwId}/64"
       ]
-      ++ lib.optional (domain.subnet4 != null) "${domain.subnet4}.0.${toString meshCfg.gwId}/20";
+      ++ lib.optional (domain.subnet4 != null) "${domain.subnet4}.0.${toString meshCfg.gwId}/16";
     };
 in
 {
