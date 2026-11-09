@@ -30,6 +30,7 @@ lib.mkMerge [
     fnsh.sites.fnsh = {
       name = "Freie Netze Suedhessen";
       domains = lib.listToAttrs (map mkDomain (lib.range firstDomain lastDomain));
+      searchDomain = "mesh.as62028.de";
     };
   }
   {

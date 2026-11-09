@@ -74,6 +74,9 @@ in
             type = lib.types.singleLineStr;
             description = "name of the site";
           };
+          searchDomain = lib.mkOption {
+            type = lib.types.singleLineStr;
+          };
           domains = lib.mkOption {
             type = lib.types.attrsOf (lib.types.submodule domainOptions);
           };

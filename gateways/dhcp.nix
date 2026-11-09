@@ -28,11 +28,11 @@ let
         }
         {
           name = "domain-name-servers";
-          data = "194.180.249.32";
+          data = domain.nextnode.v4;
         }
         {
           name = "domain-name";
-          data = "ffda.io";
+          data = config.fnsh.sites.fnsh.searchDomain;
         }
         {
           name = "interface-mtu";

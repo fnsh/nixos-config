@@ -13,7 +13,7 @@ let
         FlushRDNSS off;
       };
 
-      DNSSL ffda.io {
+      DNSSL ${config.fnsh.sites.fnsh.searchDomain} {
         FlushDNSSL off;
       };
 
