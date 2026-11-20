@@ -76,11 +76,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1793370552,
-        "narHash": "sha256-Dv4jEQeqvPpicC3H8mLTyqtTgXp23p4HPiCMKqKWXFA=",
+        "lastModified": 1794164954,
+        "narHash": "sha256-Byhpn44E7Gl6qg5+JlnvQVsCDHyaj27CTf/ug/7/DFs=",
         "owner": "zhaofengli",
         "repo": "colmena",
-        "rev": "fc7d67ed1cd52af91415f92ba92b543bc7245f25",
+        "rev": "bed5d9a5187a927f38a1307cd98557db87f60c36",
         "type": "github"
       },
       "original": {
@@ -92,11 +92,11 @@
     "device-pictures": {
       "flake": false,
       "locked": {
-        "lastModified": 1788205293,
-        "narHash": "sha256-rytia0QonN7zkctOrWJnzBOkaHavsmS/WMxW8hAbTwc=",
+        "lastModified": 1794866235,
+        "narHash": "sha256-C7SHQ+B+P1kX3k6iTBV2X2uqQxL5RRD+zUkZv/AyNwA=",
         "owner": "freifunk",
         "repo": "device-pictures",
-        "rev": "171d756bd2b768ffbd3815577464b77eaf8952d4",
+        "rev": "ad9c6e2ab3108b6db0b6ad39410812297bcf1a4a",
         "type": "github"
       },
       "original": {
@@ -150,14 +150,15 @@
       "inputs": {
         "nixpkgs": [
           "nixpkgs-unstable"
-        ]
+        ],
+        "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1793696974,
-        "narHash": "sha256-hYXhu77MYMheY+7hMWO60xr5dhY7YKKIhk3PgJX2a0g=",
+        "lastModified": 1795181434,
+        "narHash": "sha256-SFuUoj+DgnVT6IzH2m2Cca5cwMMrR4fLV/etUrXtxBw=",
         "owner": "freifunk",
         "repo": "meshviewer",
-        "rev": "dfb9d403cd7bd86c67f3759ad3172922c2d90d70",
+        "rev": "ffbd518f466941cfd053c540dce5876ed8b87922",
         "type": "github"
       },
       "original": {
@@ -188,11 +189,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1793633738,
-        "narHash": "sha256-dKEjuquCf1NEYiTZZr6xrvTrkhAm5Q94JuEwLBzycEs=",
-        "rev": "7dcdd87373d72e7a2173e4db02e20d3d7f495cfd",
+        "lastModified": 1795137884,
+        "narHash": "sha256-xVwloUjz7paCDnvN5dkrasmAGV+O6uyRUPFHxv2w3VA=",
+        "rev": "ab5c18fdedfc8f9bbc9d773f10a540790e2787a7",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.13446.7dcdd87373d7/nixexprs.tar.xz?lastModified=1793633738&rev=7dcdd87373d72e7a2173e4db02e20d3d7f495cfd"
+        "url": "https://releases.nixos.org/nixos/26.05/nixos-26.05.14894.ab5c18fdedfc/nixexprs.tar.xz?lastModified=1795137884&rev=ab5c18fdedfc8f9bbc9d773f10a540790e2787a7"
       },
       "original": {
         "type": "tarball",
@@ -217,11 +218,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1793726008,
-        "narHash": "sha256-iNjybNORi/2+shilhMlkNr01UHWKOHRGzQyIyvobs9o=",
-        "rev": "1d060086d60cb76a40cf37109f979d88a5bd6396",
+        "lastModified": 1795085501,
+        "narHash": "sha256-kqy60mdSH4GQAv3kzSeefteaiCv9arf3P+auosZrpo0=",
+        "rev": "0bb8272318b4ca41bf0edc6224df3e3e3046b70d",
         "type": "tarball",
-        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1107793.1d060086d60c/nixexprs.tar.xz?lastModified=1793726008&rev=1d060086d60cb76a40cf37109f979d88a5bd6396"
+        "url": "https://releases.nixos.org/nixos/unstable/nixos-26.11pre1124497.0bb8272318b4/nixexprs.tar.xz?lastModified=1795085501&rev=0bb8272318b4ca41bf0edc6224df3e3e3046b70d"
       },
       "original": {
         "type": "tarball",
@@ -257,6 +258,27 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default",
+        "type": "github"
+      }
+    },
+    "treefmt-nix": {
+      "inputs": {
+        "nixpkgs": [
+          "meshviewer",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1795017206,
+        "narHash": "sha256-WSBJcYjPRxGetDNxVzKnRPs1TQasQQlAC25W/S4W6YE=",
+        "owner": "numtide",
+        "repo": "treefmt-nix",
+        "rev": "0ba5d67225c3f5c88eb134e1a665a379bfd3bea9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "treefmt-nix",
         "type": "github"
       }
     }
